@@ -903,9 +903,14 @@
     var lines = [];
     lines.push("Change: " + d.changeName);
     lines.push("Risk level: " + risk.level + " (" + risk.score + " active risk factor" + (risk.score===1?"":"s") + ")");
-    lines.push("Rollout: " + (d.rolloutStrategy === "flag"
-      ? "Feature flag `" + d.flagName + "`, staged rollout, remove by " + d.cleanupDate
-      : "Strategy: " + d.rolloutStrategy));
+    var rolloutText = "";
+if (d.rolloutStrategy === "flag") rolloutText = "Feature flag `" + d.flagName + "`, staged rollout, remove by " + d.cleanupDate;
+else if (d.rolloutStrategy === "canary") rolloutText = "Canary deployment — stages: " + (d.canaryStages || "1, 5, 10, 25, 50, 100");
+else if (d.rolloutStrategy === "bluegreen") rolloutText = "Blue-green deployment — full switch after green is healthy";
+else if (d.rolloutStrategy === "rolling") rolloutText = "Rolling deployment — instance by instance";
+else if (d.rolloutStrategy === "dark") rolloutText = "Dark launch — shadow traffic only";
+else rolloutText = "All users, single deploy";
+lines.push("Rollout: " + rolloutText);    
     lines.push("Watcher for first 15 minutes: " + d.watcherName);
     lines.push("Gate status: " + (gate.blocked ? "BLOCKED — " + (gate.critical - gate.doneCritical) + " critical item(s) open" : "READY — all critical items complete"));
     lines.push("");

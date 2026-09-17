@@ -449,11 +449,15 @@
       <fieldset>
         <legend>Rollout strategy</legend>
         <div class="field">
-          <label for="rolloutStrategy">How does the change reach users?</label>
+          <label for="rolloutStrategy">How does the change reach users?</label>          
           <select id="rolloutStrategy">
-            <option value="flag">Feature flag — staged 0% → 100%</option>
-            <option value="all">All users at once</option>
-          </select>
+  <option value="flag">Feature flag — staged 0% → 100%</option>
+  <option value="canary">Canary deployment — 1% → 5% → 10% → 100%</option>
+  <option value="bluegreen">Blue-green deployment — full switch</option>
+  <option value="rolling">Rolling deployment — instance by instance</option>
+  <option value="all">All users at once</option>
+  <option value="dark">Dark launch — shadow traffic only</option>
+          </select>    
         </div>
         <div class="sub-panel" id="panel-flag">
           <div class="row2">

@@ -632,11 +632,23 @@
   });
 
   var rolloutSelect = $("rolloutStrategy");
-  function syncFlagPanel(){
-    $("panel-flag").classList.toggle("show", rolloutSelect.value === "flag");
-  }
-  rolloutSelect.addEventListener("change", function(){ syncFlagPanel(); renderAll(); });
-  syncFlagPanel();
+function syncRolloutPanels(){
+  // पुराने सारे पैनल छुपा दें
+  document.querySelectorAll(".sub-panel").forEach(function(p){
+    if (p.id.indexOf("panel-flag") === 0 || p.id.indexOf("panel-canary") === 0 || p.id.indexOf("panel-bluegreen") === 0 || p.id.indexOf("panel-rolling") === 0 || p.id.indexOf("panel-dark") === 0){
+      p.classList.remove("show");
+    }
+  });
+  // चुने हुए ऑप्शन के हिसाब से पैनल दिखाएं
+  var v = rolloutSelect.value;
+  if (v === "flag" && $("panel-flag")) $("panel-flag").classList.add("show");
+  if (v === "canary" && $("panel-canary")) $("panel-canary").classList.add("show");
+  if (v === "bluegreen" && $("panel-bluegreen")) $("panel-bluegreen").classList.add("show");
+  if (v === "rolling" && $("panel-rolling")) $("panel-rolling").classList.add("show");
+  if (v === "dark" && $("panel-dark")) $("panel-dark").classList.add("show");
+}
+rolloutSelect.addEventListener("change", function(){ syncRolloutPanels(); renderAll(); });
+syncRolloutPanels();
 
   var debounceTimer = null;
   document.querySelectorAll("input, select").forEach(function(el){

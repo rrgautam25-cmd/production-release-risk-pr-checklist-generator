@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deploy Ready — Production Release Risk &amp; PR Checklist Generator</title>
+<meta name="description" content="Free, no-login production release risk and PR checklist generator. Get a strict Go/No-Go gate, evidence-based checklist, DB migration plan, async payload strategy, cache versioning, feature flag config, and rollback triggers — all in your browser.">
+<meta name="keywords" content="release checklist, production readiness, deployment risk, PR checklist, go no-go gate, rollback plan, database migration, feature flag, DevOps, SRE">
+<meta name="author" content="Deploy Ready">
+<meta property="og:title" content="Deploy Ready — Production Release Risk & PR Checklist Generator">
+<meta property="og:description" content="Free, no-login production release risk and PR checklist generator. Strict Go/No-Go gate, evidence-based checklist, and rollback triggers.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://deploy-ready.pages.dev">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Deploy Ready — Production Release Risk & PR Checklist Generator">
+<meta name="twitter:description" content="Free, no-login production release risk and PR checklist generator.">
+<link rel="canonical" href="https://deploy-ready.pages.dev">
+<style>
+  :root{
+    --bg:#0F1420;
+    --panel:#171E2E;
+    --panel-alt:#1D2536;
+    --panel-raise:#232C41;
+    --border:#2A3448;
+    --border-soft:#212a3c;
+    --text:#E7EAF3;
+    --text-soft:#9AA4BC;
+    --text-mute:#626D87;
+    --amber:#E3A438;
+    --teal:#45C4B0;
+    --red:#E1615A;
+    --blue:#5B8DEF;
+    --green:#3FB950;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 500px at 85% -10%, rgba(91,141,239,0.08), transparent 60%),
+      radial-gradient(900px 400px at 5% 0%, rgba(227,164,56,0.06), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    min-height:100vh;
+  }
+  a{color:var(--blue);}
+  .wrap{max-width:1320px;margin:0 auto;padding:28px 20px 60px;}
+
+  header.top{
+    display:flex;flex-direction:column;gap:6px;
+    padding-bottom:22px;margin-bottom:26px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .kicker{
+    display:flex;align-items:center;gap:10px;
+    color:var(--amber); font-size:13px; letter-spacing:0.02em;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 0 3px rgba(227,164,56,0.18);}
+  h1{font-size:28px;margin:2px 0 4px;font-weight:650;letter-spacing:-0.01em;}
+  header.top p{margin:0;color:var(--text-soft);font-size:14.5px;max-width:760px;}
+
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel-alt);border:1px solid var(--border);
+    color:var(--text-soft);font-size:12px;padding:5px 10px;border-radius:20px;
+  }
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start;}
+  @media (max-width: 940px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:20px;
+  }
+
+  .form-card{position:sticky; top:16px;}
+  @media (max-width:940px){ .form-card{position:static;} }
+
+  fieldset{border:none;margin:0 0 18px;padding:0;}
+  fieldset legend{
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--text-mute); padding:0 0 8px; font-weight:600;
+    border-bottom:1px solid var(--border-soft); width:100%; margin-bottom:12px;
+  }
+  .field{margin-bottom:12px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block;font-size:13px;color:var(--text-soft);margin-bottom:5px;}
+  .hint{font-size:11.5px;color:var(--text-mute);margin-top:4px;}
+  input[type=text], input[type=number], input[type=date], select, textarea{
+    width:100%; background:var(--panel-alt); border:1px solid var(--border);
+    color:var(--text); padding:8px 10px; border-radius:7px; font-size:13.5px;
+    font-family:var(--sans);
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--blue); outline-offset:1px; border-color:var(--blue);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--panel-alt); border:1px solid var(--border);
+    border-radius:7px; padding:9px 11px; cursor:pointer; user-select:none;
+  }
+  .toggle-row .label-block{display:flex; flex-direction:column; gap:2px;}
+  .toggle-row .label-block span.t{font-size:13.5px; color:var(--text);}
+  .toggle-row .label-block span.d{font-size:11.5px; color:var(--text-mute);}
+  .switch{
+    width:38px;height:22px;border-radius:20px;background:#333d54;position:relative;
+    flex:0 0 auto; transition:background .15s ease; margin-left:12px;
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#c7cede;transition:transform .15s ease;
+  }
+  .toggle-row.on .switch{background:var(--teal);}
+  .toggle-row.on .switch::after{transform:translateX(16px); background:#0c1420;}
+  .toggle-row + .toggle-row{margin-top:8px;}
+  .sub-panel{
+    margin-top:10px; padding:12px; border-left:2px solid var(--border);
+    display:none; gap:10px; flex-direction:column;
+  }
+  .sub-panel.show{display:flex;}
+
+  .risk-badge{
+    display:inline-flex; align-items:center; gap:8px; padding:4px 10px;
+    border-radius:20px; font-size:12.5px; font-weight:600; letter-spacing:0.01em;
+  }
+  .risk-low{background:rgba(63,185,80,0.14); color:var(--green);}
+  .risk-medium{background:rgba(227,164,56,0.15); color:var(--amber);}
+  .risk-high{background:rgba(225,97,90,0.15); color:var(--red);}
+
+  .gate-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:14px 16px; border-radius:9px; margin-bottom:16px;
+    border:1px solid var(--border);
+  }
+  .gate-banner.blocked{background:rgba(225,97,90,0.10); border-color:rgba(225,97,90,0.35);}
+  .gate-banner.ready{background:rgba(63,185,80,0.10); border-color:rgba(63,185,80,0.35);}
+  .gate-banner .g-left{display:flex; align-items:center; gap:12px;}
+  .gate-banner .g-icon{font-size:20px;}
+  .gate-banner .g-title{font-size:14px; font-weight:600;}
+  .gate-banner .g-sub{font-size:12px; color:var(--text-soft); margin-top:2px;}
+  .gate-banner .g-right{font-size:12px; color:var(--text-soft); text-align:right;}
+
+  .progress-track{
+    height:8px; background:var(--panel-alt); border-radius:20px; overflow:hidden; margin:10px 0 18px;
+    border:1px solid var(--border-soft);
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg, var(--amber), var(--teal));
+    border-radius:20px; transition:width .3s ease;
+  }
+  .progress-meta{display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-mute); margin-bottom:6px;}
+
+  .tabs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+  .tab-btn{
+    background:var(--panel-alt); border:1px solid var(--border); color:var(--text-soft);
+    padding:7px 13px; border-radius:7px; font-size:13px; cursor:pointer;
+    font-family:var(--sans);
+  }
+  .tab-btn.active{background:var(--panel-raise); color:var(--text); border-color:#3a4560;}
+  .tab-btn:hover{color:var(--text);}
+
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px; flex-wrap:wrap;}
+  .panel-head h2{font-size:16px; margin:0; font-weight:600;}
+  .panel-head p.sub{margin:2px 0 0; font-size:12.5px; color:var(--text-mute);}
+
+  .copy-btn{
+    background:var(--panel-raise); border:1px solid #3a4560; color:var(--text);
+    padding:6px 12px; border-radius:7px; font-size:12.5px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+    font-family:var(--sans);
+  }
+  .copy-btn:hover{border-color:var(--blue);}
+  .copy-btn.copied{border-color:var(--teal); color:var(--teal);}
+  .copy-btn.primary{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .copy-btn.primary:hover{opacity:0.9;}
+
+  .btn-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+
+  pre.code{
+    background:#0B0F19; border:1px solid var(--border); border-radius:8px;
+    padding:16px; overflow-x:auto; font-family:var(--mono); font-size:12.8px;
+    line-height:1.65; color:#D8DEEC; white-space:pre; margin:0;
+  }
+  .md-block{
+    background:#0B0F19; border:1px solid var(--border); border-radius:8px;
+    padding:16px 18px; font-family:var(--mono); font-size:12.8px;
+    line-height:1.75; color:#D8DEEC; white-space:pre-wrap; margin:0;
+  }
+
+  .not-applicable{
+    padding:26px; text-align:center; color:var(--text-mute); font-size:13.5px;
+    border:1px dashed var(--border); border-radius:8px;
+  }
+
+  .risk-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .risk-list li{
+    display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--text-soft);
+    padding:9px 11px; background:var(--panel-alt); border:1px solid var(--border-soft); border-radius:7px;
+  }
+  .risk-list li .mark{flex:0 0 auto; font-family:var(--mono); font-size:12px; margin-top:1px;}
+  .mark.hi{color:var(--red);}
+  .mark.md{color:var(--amber);}
+  .mark.ok{color:var(--green);}
+
+  .checklist-item{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 12px;
+    background:var(--panel-alt); border:1px solid var(--border-soft); border-radius:7px;
+    margin-bottom:8px;
+  }
+  .checklist-item input[type=checkbox]{
+    width:16px; height:16px; margin-top:2px; accent-color:var(--teal); cursor:pointer;
+    flex:0 0 auto;
+  }
+  .checklist-item .ci-label{font-size:13.5px; color:var(--text); cursor:pointer;}
+  .checklist-item.critical{border-left:3px solid var(--red);}
+  .checklist-item.done .ci-label{text-decoration:line-through; color:var(--text-mute);}
+  .critical-tag{
+    font-size:10px; text-transform:uppercase; letter-spacing:0.05em;
+    background:rgba(225,97,90,0.15); color:var(--red); padding:2px 6px;
+    border-radius:4px; margin-left:6px; font-weight:600;
+  }
+
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:14px;}
+  @media(max-width:700px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--panel-alt); border:1px solid var(--border-soft); border-radius:8px;
+    padding:12px 14px;
+  }
+  .stat .n{font-size:20px; font-weight:650;}
+  .stat .l{font-size:11.5px; color:var(--text-mute); margin-top:2px;}
+
+  /* ---- Content / SEO sections ---- */
+  .content-section{
+    margin-top:38px; padding-top:26px; border-top:1px solid var(--border-soft);
+  }
+  .content-section h2{
+    font-size:22px; margin:0 0 8px; font-weight:650; letter-spacing:-0.01em;
+  }
+  .content-section h3{
+    font-size:16px; margin:22px 0 6px; font-weight:600; color:var(--text);
+  }
+  .content-section p, .content-section li{
+    font-size:14px; color:var(--text-soft); line-height:1.7;
+  }
+  .content-section ul, .content-section ol{padding-left:20px; margin:8px 0;}
+  .content-section li{margin-bottom:6px;}
+  .content-grid{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+  @media(max-width:820px){.content-grid{grid-template-columns:1fr;}}
+
+  .faq-item{
+    border:1px solid var(--border-soft); border-radius:8px; margin-bottom:8px;
+    background:var(--panel);
+  }
+  .faq-q{
+    padding:12px 14px; font-size:14px; font-weight:550; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .faq-q:hover{color:var(--blue);}
+  .faq-a{
+    padding:0 14px 14px; font-size:13.5px; color:var(--text-soft); display:none;
+    line-height:1.7;
+  }
+  .faq-item.open .faq-a{display:block;}
+  .faq-item.open .faq-q{color:var(--blue);}
+  .faq-arrow{transition:transform .15s ease; color:var(--text-mute);}
+  .faq-item.open .faq-arrow{transform:rotate(90deg);}
+
+  .author-box{
+    display:flex; gap:14px; align-items:flex-start;
+    background:var(--panel); border:1px solid var(--border-soft);
+    border-radius:10px; padding:16px; margin-top:14px;
+  }
+  .author-avatar{
+    width:46px; height:46px; border-radius:50%; flex:0 0 auto;
+    background:linear-gradient(135deg, var(--blue), var(--teal));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:18px; color:#0B0F19;
+  }
+  .author-box .a-name{font-size:14px; font-weight:600;}
+  .author-box .a-role{font-size:12px; color:var(--text-mute); margin-bottom:4px;}
+  .author-box .a-bio{font-size:12.5px; color:var(--text-soft); line-height:1.6;}
+
+  .sources-list{list-style:none; padding:0; margin:8px 0 0;}
+  .sources-list li{
+    font-size:13px; color:var(--text-soft); padding:8px 0;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .sources-list li:last-child{border-bottom:none;}
+
+  .updated-note{
+    font-size:12px; color:var(--text-mute); margin-top:6px;
+  }
+
+  footer.foot{margin-top:36px; padding-top:18px; border-top:1px solid var(--border-soft);
+    color:var(--text-mute); font-size:12px;}
+
+  .content-body{min-height:400px;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+
+  /* Toast */
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel-raise); border:1px solid var(--border);
+    color:var(--text); padding:10px 18px; border-radius:8px; font-size:13px;
+    opacity:0; pointer-events:none; transition:all .25s ease; z-index:1000;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HEADER ============ -->
+  <header class="top">
+    <div class="kicker"><span class="dot"></span> DEPLOYMENT RISK TOOLING</div>
+    <h1>Deploy Ready</h1>
+    <p>Describe one change. Get a short, code-review-ready checklist plus the exact config, migration steps, and rollback trigger it actually needs — nothing your infrastructure should already be enforcing for you.</p>
+    <div class="badge-row">
+      <span class="badge"><span class="dot"></span> 100% Free</span>
+      <span class="badge"><span class="dot"></span> No Login Required</span>
+      <span class="badge"><span class="dot"></span> Works in Browser</span>
+      <span class="badge"><span class="dot"></span> Data Never Leaves Your Device</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ INPUT FORM ============ -->
+    <div class="card form-card">
+
+      <fieldset>
+        <legend>Change basics</legend>
+        <div class="field">
+          <label for="changeName">Change / service name</label>
+          <input type="text" id="changeName" placeholder="e.g. checkout-v2" value="checkout">
+        </div>
+        <div class="field">
+          <label for="watcherName">Who watches the first 15 minutes?</label>
+          <input type="text" id="watcherName" placeholder="e.g. on-call engineer, @priya">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Application risk</legend>
+
+        <div class="toggle-row" data-toggle="dbChange">
+          <div class="label-block">
+            <span class="t">Database schema change</span>
+            <span class="d">Adding, renaming, or dropping a column</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-dbChange">
+          <div class="field">
+            <label for="dbOperation">Operation</label>
+            <select id="dbOperation">
+              <option value="add">Add a column</option>
+              <option value="rename">Rename a column</option>
+              <option value="drop">Drop a column</option>
+            </select>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="dbTable">Table</label>
+              <input type="text" id="dbTable" placeholder="users" value="users">
+            </div>
+            <div class="field">
+              <label for="dbColumnOld">Old column</label>
+              <input type="text" id="dbColumnOld" placeholder="name" value="name">
+            </div>
+          </div>
+          <div class="field">
+            <label for="dbColumnNew">New column (leave blank if dropping only)</label>
+            <input type="text" id="dbColumnNew" placeholder="full_name" value="full_name">
+          </div>
+        </div>
+
+        <div class="toggle-row" data-toggle="asyncChange">
+          <div class="label-block">
+            <span class="t">Background worker / queue payload change</span>
+            <span class="d">Producer and consumer may deploy at different times</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-asyncChange">
+          <div class="row2">
+            <div class="field">
+              <label for="queueName">Job / event name</label>
+              <input type="text" id="queueName" placeholder="send_invoice" value="send_invoice">
+            </div>
+            <div class="field">
+              <label for="payloadOldField">Old payload field</label>
+              <input type="text" id="payloadOldField" placeholder="customer_id" value="customer_id">
+            </div>
+          </div>
+          <div class="field">
+            <label for="payloadNewField">New payload field</label>
+            <input type="text" id="payloadNewField" placeholder="customer" value="customer">
+          </div>
+        </div>
+
+        <div class="toggle-row" data-toggle="cacheChange">
+          <div class="label-block">
+            <span class="t">Cached / session object shape change</span>
+            <span class="d">Anything written into a cache is effectively a schema</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-cacheChange">
+          <div class="field">
+            <label for="cachePrefix">Cache key prefix</label>
+            <input type="text" id="cachePrefix" placeholder="user" value="user">
+          </div>
+        </div>
+
+        <div class="toggle-row" data-toggle="coldStart">
+          <div class="label-block">
+            <span class="t">Cold-start / warm-up capacity risk</span>
+            <span class="d">Instance needs time before it can safely take traffic</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-coldStart">
+          <div class="row2">
+            <div class="field">
+              <label for="warmUpSeconds">Seconds to fully warm up</label>
+              <input type="number" id="warmUpSeconds" min="1" value="40">
+            </div>
+            <div class="field">
+              <label for="probePeriod">Probe check interval (sec)</label>
+              <input type="number" id="probePeriod" min="1" value="5">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Rollout strategy</legend>
+        <div class="field">
+          <label for="rolloutStrategy">How does the change reach users?</label>
+          <select id="rolloutStrategy">
+            <option value="flag">Feature flag — staged 0% → 100%</option>
+            <option value="all">All users at once</option>
+          </select>
+        </div>
+        <div class="sub-panel" id="panel-flag">
+          <div class="row2">
+            <div class="field">
+              <label for="flagName">Flag name</label>
+              <input type="text" id="flagName" placeholder="new_checkout" value="new_checkout">
+            </div>
+            <div class="field">
+              <label for="cleanupDate">Remove-by date</label>
+              <input type="date" id="cleanupDate">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Rollback trigger</legend>
+        <div class="row2">
+          <div class="field">
+            <label for="errorRate">Error rate threshold (%)</label>
+            <input type="number" id="errorRate" min="0" step="0.1" value="1">
+          </div>
+          <div class="field">
+            <label for="watchWindow">Window (minutes)</label>
+            <input type="number" id="watchWindow" min="1" value="2">
+          </div>
+        </div>
+        <div class="field">
+          <label for="latencyMult">Latency ceiling (× normal p95)</label>
+          <input type="number" id="latencyMult" min="1" step="0.1" value="2">
+        </div>
+      </fieldset>
+
+    </div>
+
+    <!-- ============ OUTPUT PANEL ============ -->
+    <div class="card">
+      <div id="gateContainer"></div>
+      <div class="tabs" id="tabBar"></div>
+      <div class="content-body" id="contentBody"></div>
+    </div>
+
+  </div>
+
+  <!-- ============ SEO CONTENT ============ -->
+  <section class="content-section">
+    <h2>What is a production release risk checklist?</h2>
+    <p>A production release risk checklist is a structured, evidence-based guide that a team works through before code reaches live users. Unlike a generic to-do list, it is tied to one specific candidate — a release, a build, an environment — and it asks for proof, not just a tick. The goal is to catch the categories of failure that only appear when a change meets real traffic: schema changes that lock a table, queue payloads that old consumers cannot read, cached objects whose shape changed without a version bump, and probes that kill an instance right as it is about to become ready.</p>
+    <p>This tool generates that checklist from the actual risk factors you flag. If you enable the database toggle, you get a migration plan. If you enable the async toggle, you get a backward-compatible payload strategy. If you enable the cold-start toggle, you get probe numbers that match your real warm-up time. Everything else — infrastructure plumbing, certificates, image provenance, autoscaling — is left out, because those belong in your pipeline, not on a person's mental checklist.</p>
+
+    <div class="content-grid">
+      <div>
+        <h3>Why release checklists matter</h3>
+        <ul>
+          <li><strong>Missed migration steps</strong> are one of the most common causes of post-deploy incidents. An expand/contract plan removes the guesswork.</li>
+          <li><strong>Backward-incompatible payloads</strong> break silently when producers and consumers deploy at different times.</li>
+          <li><strong>Cache shape changes</strong> cause errors that look like bugs but are really schema drift.</li>
+          <li><strong>Aggressive readiness probes</strong> restart healthy instances during warm-up, turning a rollout into a loop.</li>
+          <li><strong>Undefined rollback triggers</strong> turn a two-minute fix into a forty-minute debate.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Common mistakes this tool helps you avoid</h3>
+        <ul>
+          <li>Shipping a schema change and the code that depends on it in the same deploy.</li>
+          <li>Renaming a queue payload field without a dual-write window.</li>
+          <li>Changing a cached object's shape without bumping a cache key version.</li>
+          <li>Using a single readiness probe for an app that needs a long warm-up.</li>
+          <li>Rolling out to all users at once when a feature flag was available.</li>
+          <li>Leaving a feature flag in production long after the rollout finished.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>What this tool cannot do</h3>
+    <p>This generator cannot authenticate your evidence, run your migration, execute a rollback, or replace a human decision. It derives a risk profile from the toggles you set and produces a starting checklist — but the final call to ship belongs to a named, accountable owner. Treat the output as a structured prompt for review, not a substitute for one.</p>
+
+    <h3>Best practices for using this checklist</h3>
+    <ul>
+      <li><strong>One checklist per release.</strong> Do not mix multiple launches into one document.</li>
+      <li><strong>Attach evidence links to critical tasks.</strong> A PR, a dashboard, a runbook, a test report.</li>
+      <li><strong>Decide the rollback trigger before shipping</strong>, not during the incident.</li>
+      <li><strong>Keep the Go/No-Go gate strict.</strong> If critical tasks are open, the release stays blocked.</li>
+      <li><strong>Bump cache versions and dual-write payloads</strong> — add, migrate, remove, in that order.</li>
+      <li><strong>Remove feature flags by the date you wrote down</strong>, or they become permanent branches.</li>
+    </ul>
+
+    <h3>Frequently asked questions</h3>
+    <div id="faqContainer"></div>
+
+    <h3>About the author</h3>
+    <div class="author-box">
+      <div class="author-avatar">DR</div>
+      <div>
+        <div class="a-name">Deploy Ready</div>
+        <div class="a-role">Production engineering &amp; release tooling</div>
+        <div class="a-bio">Built from patterns observed across release checklists, SRE runbooks, and post-incident reviews. Focused on the small set of application-level decisions that a pipeline cannot make for you — schema compatibility, payload contracts, cache versioning, probe windows, and rollback authority.</div>
+      </div>
+    </div>
+    <p class="updated-note">Last updated: <span id="updatedDate"></span></p>
+
+    <h3>Sources and references</h3>
+    <ul class="sources-list">
+      <li>Google SRE — <em>Reliable Product Launches at Scale</em> (launch coordination, progressive exposure, rollback planning)</li>
+      <li>AWS Well-Architected Framework — operational readiness and safe deployment practices</li>
+      <li>Microsoft Azure Architecture Center — progressive exposure, health models, recovery patterns</li>
+      <li>NIST SSDF — secure software development practices integrated into the release lifecycle</li>
+      <li>OWASP ASVS — application security verification requirements for release gates</li>
+      <li>RFC 2606 — reserved top-level DNS names used in fictional examples</li>
+    </ul>
+  </section>
+
+  <footer class="foot">
+    Runs entirely in your browser — nothing you type here is sent anywhere. Built around the idea that a deployment checklist should be as long as your application's risk requires, and no longer.
+  </footer>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state ----------
+  var state = {
+    dbChange:false, asyncChange:false, cacheChange:false, coldStart:false
+  };
+  var activeTab = "summary";
+  var checkedItems = {}; // id -> bool
+
+  // ---------- helpers ----------
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var el = $(id); return el ? el.value : ""; }
+  function num(id, fallback){
+    var v = parseFloat(val(id));
+    return isNaN(v) ? fallback : v;
+  }
+  function safe(s, fallback){
+    s = (s || "").toString().trim();
+    return s.length ? s : fallback;
+  }
+
+  function todayPlus(days){
+    var d = new Date();
+    d.setDate(d.getDate()+days);
+    return d.toISOString().slice(0,10);
+  }
+
+  function showToast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  try { $("cleanupDate").value = todayPlus(42); } catch(e){}
+  try { $("updatedDate").textContent = new Date().toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}); } catch(e){}
+
+  // ---------- toggles ----------
+  document.querySelectorAll(".toggle-row[data-toggle]").forEach(function(row){
+    var key = row.getAttribute("data-toggle");
+    row.addEventListener("click", function(){
+      state[key] = !state[key];
+      row.classList.toggle("on", state[key]);
+      var panel = $("panel-" + key);
+      if (panel) panel.classList.toggle("show", state[key]);
+      renderAll();
+    });
+    row.addEventListener("keydown", function(ev){
+      if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); row.click(); }
+    });
+    row.setAttribute("tabindex", "0");
+    row.setAttribute("role", "switch");
+    row.setAttribute("aria-checked", "false");
+  });
+
+  var rolloutSelect = $("rolloutStrategy");
+  function syncFlagPanel(){
+    $("panel-flag").classList.toggle("show", rolloutSelect.value === "flag");
+  }
+  rolloutSelect.addEventListener("change", function(){ syncFlagPanel(); renderAll(); });
+  syncFlagPanel();
+
+  var debounceTimer = null;
+  document.querySelectorAll("input, select").forEach(function(el){
+    el.addEventListener("input", function(){
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(renderAll, 120);
+    });
+  });
+
+  // ---------- gather ----------
+  function gather(){
+    return {
+      changeName: safe(val("changeName"), "this change"),
+      watcherName: safe(val("watcherName"), "an assigned owner"),
+      dbChange: state.dbChange,
+      dbOperation: val("dbOperation") || "add",
+      dbTable: safe(val("dbTable"), "table"),
+      dbColumnOld: safe(val("dbColumnOld"), "old_column"),
+      dbColumnNew: safe(val("dbColumnNew"), "new_column"),
+      asyncChange: state.asyncChange,
+      queueName: safe(val("queueName"), "job_name"),
+      payloadOldField: safe(val("payloadOldField"), "old_field"),
+      payloadNewField: safe(val("payloadNewField"), "new_field"),
+      cacheChange: state.cacheChange,
+      cachePrefix: safe(val("cachePrefix"), "key"),
+      coldStart: state.coldStart,
+      warmUpSeconds: Math.max(1, num("warmUpSeconds", 40)),
+      probePeriod: Math.max(1, num("probePeriod", 5)),
+      rolloutStrategy: val("rolloutStrategy") || "flag",
+      flagName: safe(val("flagName"), "new_feature"),
+      cleanupDate: safe(val("cleanupDate"), todayPlus(42)),
+      errorRate: num("errorRate", 1),
+      watchWindow: Math.max(1, num("watchWindow", 2)),
+      latencyMult: num("latencyMult", 2)
+    };
+  }
+
+  // ---------- risk ----------
+  function computeRisk(d){
+    var factors = [];
+    if (d.dbChange) factors.push("Database schema change");
+    if (d.asyncChange) factors.push("Background worker / queue payload change");
+    if (d.cacheChange) factors.push("Cached or session object shape change");
+    if (d.coldStart) factors.push("Cold-start capacity risk");
+
+    var score = factors.length;
+    if (d.rolloutStrategy === "all" && score > 0) score += 1;
+
+    var level = "Low", cls = "risk-low";
+    if (score >= 3) { level = "High"; cls = "risk-high"; }
+    else if (score >= 1) { level = "Medium"; cls = "risk-medium"; }
+
+    return { factors: factors, score: score, level: level, cls: cls };
+  }
+
+  // ---------- checklist items (with critical flags) ----------
+  function buildChecklistItems(d, risk){
+    var items = [];
+
+    items.push({ id:"compat", text:"Confirm the change is backwards compatible with the running version, including job payloads and cached data.", critical: d.asyncChange || d.cacheChange });
+
+    if (d.dbChange){
+      items.push({ id:"dborder", text:"Confirm the schema change (" + d.dbOperation + " on `" + d.dbTable + "." + (d.dbOperation==="add"?d.dbColumnNew:d.dbColumnOld) + "`) ships in an earlier deploy than the code that depends on it.", critical: true });
+    }
+
+    items.push({ id:"config", text:"Confirm any new config this deploy needs already exists in the target environment.", critical:false });
+
+    if (d.coldStart){
+      items.push({ id:"probe", text:"Confirm the startup probe window (~" + Math.ceil(d.warmUpSeconds/d.probePeriod) + " checks at " + d.probePeriod + "s) covers the real warm-up time (" + d.warmUpSeconds + "s).", critical:true });
+    }
+
+    items.push({ id:"rollback", text:"Name the rollback trigger: error rate above " + d.errorRate + "% for " + d.watchWindow + " minute" + (d.watchWindow===1?"":"s") + ", or p95 latency above " + d.latencyMult + "x normal.", critical:true });
+
+    items.push({ id:"rollout", text:"Say how the change reaches users: " + (d.rolloutStrategy === "flag"
+      ? "behind flag `" + d.flagName + "`, staged 0% → internal → 1% → 100%, removed by " + d.cleanupDate + "."
+      : "all users, single deploy — confirm this is deliberate for the risk level above."), critical: d.rolloutStrategy === "all" });
+
+    items.push({ id:"watcher", text:"Name who watches for the first fifteen minutes: " + d.watcherName + ".", critical:false });
+
+    if (d.cacheChange){
+      items.push({ id:"cachever", text:"Bump the cache key version (`" + d.cachePrefix + ":v2:*`) so old readers never see the new shape.", critical:true });
+    }
+
+    if (d.asyncChange){
+      items.push({ id:"dualwrite", text:"Dual-write the payload (`" + d.payloadOldField + "` + `" + d.payloadNewField + "`), and only drop the old field after the queue drains.", critical:true });
+    }
+
+    return items;
+  }
+
+  // ---------- gate logic ----------
+  function computeGate(d, risk, items){
+    var critical = items.filter(function(i){ return i.critical; });
+    var doneCritical = critical.filter(function(i){ return checkedItems[i.id]; }).length;
+    var total = items.length;
+    var done = items.filter(function(i){ return checkedItems[i.id]; }).length;
+    var blocked = (critical.length > 0) && (doneCritical < critical.length);
+    return { critical:critical.length, doneCritical:doneCritical, total:total, done:done, blocked:blocked };
+  }
+
+  // ---------- generators ----------
+  function genSummary(d, risk, gate){
+    var lines = [];
+    lines.push("Change: " + d.changeName);
+    lines.push("Risk level: " + risk.level + " (" + risk.score + " active risk factor" + (risk.score===1?"":"s") + ")");
+    lines.push("Rollout: " + (d.rolloutStrategy === "flag"
+      ? "Feature flag `" + d.flagName + "`, staged rollout, remove by " + d.cleanupDate
+      : "All users, single deploy"));
+    lines.push("Watcher for first 15 minutes: " + d.watcherName);
+    lines.push("Gate status: " + (gate.blocked ? "BLOCKED — " + (gate.critical - gate.doneCritical) + " critical item(s) open" : "READY — all critical items complete"));
+    lines.push("");
+    if (risk.factors.length){
+      lines.push("Active application-risk factors:");
+      risk.factors.forEach(function(f){ lines.push("  - " + f); });
+    } else {
+      lines.push("No application-risk factors were flagged. This looks close to a routine, low-risk deploy —");
+      lines.push("keep the checklist short and let review + tests do the rest of the work.");
+    }
+    lines.push("");
+    lines.push("Reminder: infrastructure items (certs, image provenance, autoscaling, log shipping, connection");
+    lines.push("draining) should be enforced by your pipeline, not re-checked by a person on every deploy.");
+    return lines.join("\n");
+  }
+
+  function genChecklist(d, risk, items){
+    var lines = [];
+    lines.push("## Deployment checklist — " + d.changeName);
+    lines.push("");
+    items.forEach(function(it){
+      var tick = checkedItems[it.id] ? "x" : " ";
+      lines.push("- [" + tick + "] " + it.text + (it.critical ? "  **[CRITICAL]**" : ""));
+    });
+    lines.push("");
+    lines.push("_Risk level: " + risk.level + ". Generated from " + risk.score + " active application-risk factor" + (risk.score===1?"":"s") + "._");
+    return lines.join("\n");
+  }
+
+  function genDbMigration(d){
+    var lines = [];
+    var op = d.dbOperation, table = d.dbTable, oldC = d.dbColumnOld, newC = d.dbColumnNew;
+    lines.push("-- Expand / contract migration for " + table + "." + (op==="add"?newC:oldC));
+    lines.push("-- Never ship a schema change and the code that depends on it in the same deploy.");
+    lines.push("");
+    if (op === "add" || op === "rename"){
+      lines.push("-- Deploy 1: add the column. Nullable, no default, so there is no table rewrite or long lock.");
+      lines.push("ALTER TABLE " + table + " ADD COLUMN " + newC + " varchar(255);");
+      lines.push("");
+      lines.push("-- Deploy 2: write both, still read the old one.");
+      lines.push("def save_" + table.replace(/s$/,'') + "(record, value):");
+      lines.push("    record." + oldC + " = value        # still the source of truth");
+      lines.push("    record." + newC + " = value        # new column starts filling");
+      lines.push("");
+      lines.push("-- Backfill rows that existed before deploy 2, in batches so no lock is held long.");
+      lines.push("UPDATE " + table + " SET " + newC + " = " + oldC);
+      lines.push("WHERE " + newC + " IS NULL");
+      lines.push("LIMIT 5000;");
+      lines.push("");
+      lines.push("-- Deploy 3: read the new column, with a fallback so rolling back to deploy 2 is safe.");
+      lines.push("display_value = record." + newC + " or record." + oldC);
+      lines.push("");
+      lines.push("-- Deploy 4 (contract): weeks later, once nothing references the old column.");
+      lines.push("ALTER TABLE " + table + " DROP COLUMN " + oldC + ";");
+    } else {
+      lines.push("-- Dropping a column safely means the contract step of a migration already underway.");
+      lines.push("-- Confirm every deploy of every service has stopped reading `" + oldC + "` before this ships:");
+      lines.push("ALTER TABLE " + table + " DROP COLUMN " + oldC + ";");
+      lines.push("");
+      lines.push("-- If nothing has stopped reading it yet, this is not a drop — it's an outage.");
+    }
+    lines.push("");
+    lines.push("-- One rule regardless of direction: never run a long migration inside the deploy itself.");
+    return lines.join("\n");
+  }
+
+  function genAsyncPayload(d){
+    var lines = [];
+    lines.push("# Producer and consumer for `" + d.queueName + "` may not deploy at the same moment.");
+    lines.push("# For one release, send a shape both the old and new consumer can read.");
+    lines.push("");
+    lines.push("enqueue(\"" + d.queueName + "\", {");
+    lines.push("    \"" + d.payloadOldField + "\": value,                 # old consumers read this");
+    lines.push("    \"" + d.payloadNewField + "\": {\"id\": value, ...},   # new consumers read this");
+    lines.push("})");
+    lines.push("");
+    lines.push("def " + d.queueName + "(payload):");
+    lines.push("    key = payload.get(\"" + d.payloadOldField + "\") or payload[\"" + d.payloadNewField + "\"][\"id\"]");
+    lines.push("");
+    lines.push("# Then: deploy the new consumer, let the queue drain, and drop `" + d.payloadOldField + "`");
+    lines.push("# from the producer in a later release. Same rule as a database column:");
+    lines.push("# add, migrate, remove — never all at once.");
+    return lines.join("\n");
+  }
+
+  function genCacheVersioning(d){
+    var lines = [];
+    lines.push("# Changing the shape of a cached object breaks old readers even though no database was touched.");
+    lines.push("");
+    lines.push("CACHE_VERSION = \"v2\"   # bump this whenever the stored shape changes");
+    lines.push("");
+    lines.push("def cache_key(" + d.cachePrefix + "_id):");
+    lines.push("    return f\"" + d.cachePrefix + ":{CACHE_VERSION}:{" + d.cachePrefix + "_id}\"");
+    lines.push("");
+    lines.push("cache.set(cache_key(" + d.cachePrefix + ".id), new_shape, ex=86400)");
+    lines.push("");
+    lines.push("# New code misses on the new key, rebuilds from the source of truth.");
+    lines.push("# Old `" + d.cachePrefix + ":*` entries expire on their own.");
+    return lines.join("\n");
+  }
+
+  function genFlagYaml(d){
+    var lines = [];
+    lines.push("# flags.yml — stage 1: code is live, behaviour is not");
+    lines.push(d.flagName + ":");
+    lines.push("  enabled: false");
+    lines.push("");
+    lines.push("# Stage 2: internal only");
+    lines.push(d.flagName + ":");
+    lines.push("  enabled: true");
+    lines.push("  audience: internal");
+    lines.push("");
+    lines.push("# Stage 3: 1% of real users — watch error rate and latency at this slice");
+    lines.push(d.flagName + ":");
+    lines.push("  enabled: true");
+    lines.push("  audience: percentage");
+    lines.push("  percentage: 1");
+    lines.push("");
+    lines.push("# Stage 4: everyone, with the cleanup date written down at the same time");
+    lines.push(d.flagName + ":");
+    lines.push("  enabled: true");
+    lines.push("  audience: percentage");
+    lines.push("  percentage: 100");
+    lines.push("  remove_by: " + d.cleanupDate);
+    lines.push("");
+    lines.push("# If anything looks wrong at any stage: set enabled: false instead of redeploying.");
+    return lines.join("\n");
+  }
+
+  function genProbes(d){
+    var period = d.probePeriod;
+    var startupThreshold = Math.ceil(d.warmUpSeconds / period) + 2;
+    var startupWindow = startupThreshold * period;
+    var lines = [];
+    lines.push("# Generous window for the first boot only.");
+    lines.push("startupProbe:");
+    lines.push("  httpGet: { path: /ready, port: 8080 }");
+    lines.push("  periodSeconds: " + period);
+    lines.push("  failureThreshold: " + startupThreshold + "     # allows ~" + startupWindow + "s to warm up (needs " + d.warmUpSeconds + "s)");
+    lines.push("");
+    lines.push("# Tight window once the app is actually up.");
+    lines.push("readinessProbe:");
+    lines.push("  httpGet: { path: /ready, port: 8080 }");
+    lines.push("  periodSeconds: " + period);
+    lines.push("  failureThreshold: 3");
+    lines.push("");
+    lines.push("# If failureThreshold * periodSeconds on the OLD single readiness probe was less than " + d.warmUpSeconds + "s,");
+    lines.push("# instances were being killed right as they were about to be ready.");
+    return lines.join("\n");
+  }
+
+  function genRollback(d){
+    var lines = [];
+    lines.push("Rollback trigger for " + d.changeName + " — decided before shipping:");
+    lines.push("");
+    lines.push("  1. Error rate above " + d.errorRate + "% sustained for " + d.watchWindow + " minute" + (d.watchWindow===1?"":"s") + ".");
+    lines.push("  2. p95 latency above " + d.latencyMult + "x its normal value.");
+    if (d.asyncChange){
+      lines.push("  3. Queue depth on `" + d.queueName + "` climbing without recovery.");
+    }
+    lines.push("");
+    lines.push("Roll back the moment any one is crossed — no discussion at the time it happens.");
+    lines.push("Watch percentiles, not averages.");
+    lines.push("");
+    lines.push("Honesty check: how long would it actually take " + d.watcherName + " to notice each signal today?");
+    lines.push("If that's longer than the " + d.watchWindow + "-minute window above, the gap isn't the checklist —");
+    lines.push("it's the monitoring.");
+    return lines.join("\n");
+  }
+
+  // ---------- tabs ----------
+  function buildTabs(d, risk, items){
+    var tabs = [];
+    tabs.push({ id:"summary", label:"Risk Summary", render:function(){ return { type:"md", text: genSummary(d, risk, computeGate(d, risk, items)) }; } });
+    tabs.push({ id:"checklist", label:"PR Checklist", render:function(){ return { type:"md", text: genChecklist(d, risk, items) }; } });
+    if (d.dbChange) tabs.push({ id:"dbmig", label:"DB Migration", render:function(){ return { type:"code", text: genDbMigration(d) }; } });
+    if (d.asyncChange) tabs.push({ id:"asyncpay", label:"Async Payload", render:function(){ return { type:"code", text: genAsyncPayload(d) }; } });
+    if (d.cacheChange) tabs.push({ id:"cachever", label:"Cache Versioning", render:function(){ return { type:"code", text: genCacheVersioning(d) }; } });
+    if (d.rolloutStrategy === "flag") tabs.push({ id:"flagyaml", label:"Feature Flag", render:function(){ return { type:"code", text: genFlagYaml(d) }; } });
+    if (d.coldStart) tabs.push({ id:"probes", label:"K8s Probes", render:function(){ return { type:"code", text: genProbes(d) }; } });
+    tabs.push({ id:"rollback", label:"Rollback Trigger", render:function(){ return { type:"md", text: genRollback(d) }; } });
+    return tabs;
+  }
+
+  function fullPackage(d, risk, items, tabs){
+    var parts = [];
+    parts.push("### Risk Summary\n");
+    parts.push(genSummary(d, risk, computeGate(d, risk, items)));
+    parts.push("");
+    parts.push("### PR Checklist\n");
+    parts.push(genChecklist(d, risk, items));
+    parts.push("");
+    tabs.forEach(function(t){
+      if (t.id === "summary" || t.id === "checklist") return;
+      var out = t.render();
+      parts.push("### " + t.label + "\n");
+      parts.push(out.type === "code" ? "```\n" + out.text + "\n```" : out.text);
+      parts.push("");
+    });
+    return parts.join("\n");
+  }
+
+  // ---------- clipboard ----------
+  function copyText(text, btn){
+    function done(ok){
+      if (btn){
+        var original = btn.getAttribute("data-label") || btn.textContent;
+        btn.setAttribute("data-label", original);
+        btn.textContent = ok ? "Copied" : "Copy failed";
+        btn.classList.toggle("copied", ok);
+        setTimeout(function(){ btn.textContent = original; btn.classList.remove("copied"); }, 1400);
+      } else {
+        showToast(ok ? "Copied to clipboard" : "Copy failed");
+      }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }).catch(fallback);
+    } else { fallback(); }
+    function fallback(){
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        var ok = document.execCommand("copy");
+        document.body.removeChild(ta); done(!!ok);
+      } catch(e){ done(false); }
+    }
+  }
+
+  // ---------- shareable link ----------
+  function buildShareURL(d){
+    var payload = {
+      n: d.changeName, w: d.watcherName,
+      db: d.dbChange?1:0, dbo: d.dbOperation, dbt: d.dbTable, dbc: d.dbColumnOld, dbn: d.dbColumnNew,
+      a: d.asyncChange?1:0, q: d.queueName, po: d.payloadOldField, pn: d.payloadNewField,
+      c: d.cacheChange?1:0, cp: d.cachePrefix,
+      cs: d.coldStart?1:0, ws: d.warmUpSeconds, pp: d.probePeriod,
+      rs: d.rolloutStrategy, fn: d.flagName, cd: d.cleanupDate,
+      er: d.errorRate, ww: d.watchWindow, lm: d.latencyMult
+    };
+    try {
+      var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      return location.origin + location.pathname + "?s=" + encoded;
+    } catch(e){ return location.href; }
+  }
+
+  function loadFromURL(){
+    var params = new URLSearchParams(location.search);
+    var s = params.get("s");
+    if (!s) return;
+    try {
+      var payload = JSON.parse(decodeURIComponent(escape(atob(s))));
+      if (payload.n) $("changeName").value = payload.n;
+      if (payload.w) $("watcherName").value = payload.w;
+      if (payload.db){ state.dbChange = true; document.querySelector('[data-toggle="dbChange"]').classList.add("on"); $("panel-dbChange").classList.add("show"); }
+      if (payload.dbo) $("dbOperation").value = payload.dbo;
+      if (payload.dbt) $("dbTable").value = payload.dbt;
+      if (payload.dbc) $("dbColumnOld").value = payload.dbc;
+      if (payload.dbn) $("dbColumnNew").value = payload.dbn;
+      if (payload.a){ state.asyncChange = true; document.querySelector('[data-toggle="asyncChange"]').classList.add("on"); $("panel-asyncChange").classList.add("show"); }
+      if (payload.q) $("queueName").value = payload.q;
+      if (payload.po) $("payloadOldField").value = payload.po;
+      if (payload.pn) $("payloadNewField").value = payload.pn;
+      if (payload.c){ state.cacheChange = true; document.querySelector('[data-toggle="cacheChange"]').classList.add("on"); $("panel-cacheChange").classList.add("show"); }
+      if (payload.cp) $("cachePrefix").value = payload.cp;
+      if (payload.cs){ state.coldStart = true; document.querySelector('[data-toggle="coldStart"]').classList.add("on"); $("panel-coldStart").classList.add("show"); }
+      if (payload.ws) $("warmUpSeconds").value = payload.ws;
+      if (payload.pp) $("probePeriod").value = payload.pp;
+      if (payload.rs) $("rolloutStrategy").value = payload.rs;
+      if (payload.fn) $("flagName").value = payload.fn;
+      if (payload.cd) $("cleanupDate").value = payload.cd;
+      if (payload.er !== undefined) $("errorRate").value = payload.er;
+      if (payload.ww) $("watchWindow").value = payload.ww;
+      if (payload.lm) $("latencyMult").value = payload.lm;
+      syncFlagPanel();
+      showToast("Loaded shared checklist");
+    } catch(e){ /* ignore malformed */ }
+  }
+
+  // ---------- FAQ ----------
+  var FAQ = [
+    { q:"Is this tool really free?", a:"Yes. It runs entirely in your browser. There is no signup, no login, and no server-side storage. Nothing you type is transmitted anywhere." },
+    { q:"Does it store my data?", a:"No. All state lives in your browser tab. If you close the tab, the data is gone. You can generate a shareable link that encodes your inputs in the URL, but that link is only as private as the URL itself." },
+    { q:"What is a Go/No-Go gate?", a:"A gate that blocks the release until every critical checklist item is complete. In this tool, critical items are marked in red. Until all of them are ticked, the gate shows BLOCKED. You can still copy the output, but the tool will not call the release ready." },
+    { q:"What makes a task critical?", a:"Anything that, if missed, can cause a production incident: schema changes shipped in the wrong order, backward-incompatible payloads, cache shape changes without a version bump, probe windows shorter than the real warm-up, and undefined rollback triggers." },
+    { q:"How is this different from a generic to-do list?", a:"A to-do list records intent. This tool derives a risk profile from the toggles you set and produces content that is specific to the change — migration steps for your table, dual-write code for your queue, probe numbers for your warm-up. It also enforces a gate." },
+    { q:"Can I share my checklist with my team?", a:"Yes. Use the 'Copy shareable link' button. It encodes your inputs into the URL. Anyone who opens the link sees the same checklist and the same gate state." },
+    { q:"Can I download the output?", a:"Yes. Use 'Copy full package' to copy everything as Markdown, or use the per-tab copy buttons. You can also use your browser's print dialog (Ctrl/Cmd + P) to save the page as a PDF." },
+    { q:"Does it work on mobile?", a:"Yes. The layout collapses to a single column on small screens, and all inputs work with touch." },
+    { q:"Why is there no AI auto-generation?", a:"Because the value of this tool is in the specificity of its rules, not in free-form generation. Every output is deterministic and tied to a known pattern. That makes it reproducible and reviewable, which matters more than novelty on a release gate." },
+    { q:"What does this tool NOT do?", a:"It does not authenticate evidence, run your migration, execute a rollback, or replace a human decision. It derives a risk profile and produces a structured starting checklist. The final call to ship belongs to a named, accountable owner." }
+  ];
+
+  function renderFAQ(){
+    var c = $("faqContainer");
+    c.innerHTML = "";
+    FAQ.forEach(function(item, idx){
+      var div = document.createElement("div");
+      div.className = "faq-item";
+      var q = document.createElement("div");
+      q.className = "faq-q";
+      q.innerHTML = "<span>" + item.q + "</span><span class='faq-arrow'>›</span>";
+      var a = document.createElement("div");
+      a.className = "faq-a";
+      a.textContent = item.a;
+      q.addEventListener("click", function(){ div.classList.toggle("open"); });
+      div.appendChild(q); div.appendChild(a);
+      c.appendChild(div);
+    });
+  }
+
+  // ---------- render ----------
+  function renderAll(){
+    var d, risk, items, tabs, gate;
+    try {
+      d = gather();
+      risk = computeRisk(d);
+      items = buildChecklistItems(d, risk);
+      tabs = buildTabs(d, risk, items);
+      gate = computeGate(d, risk, items);
+    } catch(err){
+      $("contentBody").innerHTML = "<div class='not-applicable'>Something in the form couldn't be read. Adjust the fields and it will refresh automatically.</div>";
+      return;
+    }
+
+    if (!tabs.some(function(t){ return t.id === activeTab; })) activeTab = "summary";
+
+    // gate banner
+    var gc = $("gateContainer");
+    gc.innerHTML = "";
+    var banner = document.createElement("div");
+    banner.className = "gate-banner " + (gate.blocked ? "blocked" : "ready");
+    var pct = gate.total ? Math.round((gate.done / gate.total) * 100) : 0;
+    banner.innerHTML =
+      '<div class="g-left">' +
+        '<div class="g-icon">' + (gate.blocked ? "⛔" : "✅") + '</div>' +
+        '<div>' +
+          '<div class="g-title">' + (gate.blocked ? "Release blocked" : "Ready to ship") + '</div>' +
+          '<div class="g-sub">' + (gate.blocked
+            ? (gate.critical - gate.doneCritical) + " of " + gate.critical + " critical item(s) still open — tick them in the PR Checklist tab."
+            : "All critical items complete. Complete any remaining non-critical items before shipping.") + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="g-right">' + gate.done + " / " + gate.total + " items · " + pct + '%</div>';
+    gc.appendChild(banner);
+
+    var prog = document.createElement("div");
+    prog.className = "progress-track";
+    var fill = document.createElement("div");
+    fill.className = "progress-fill";
+    fill.style.width = pct + "%";
+    prog.appendChild(fill);
+    gc.appendChild(prog);
+
+    // tabs
+    var bar = $("tabBar");
+    bar.innerHTML = "";
+    tabs.forEach(function(t){
+      var b = document.createElement("button");
+      b.className = "tab-btn" + (t.id === activeTab ? " active" : "");
+      b.textContent = t.label;
+      b.addEventListener("click", function(){ activeTab = t.id; renderAll(); });
+      bar.appendChild(b);
+    });
+
+    // content
+    var body = $("contentBody");
+    body.innerHTML = "";
+
+    // action row (always on top)
+    var actions = document.createElement("div");
+    actions.className = "btn-row";
+    var copyPkg = document.createElement("button");
+    copyPkg.className = "copy-btn primary";
+    copyPkg.textContent = "Copy full package";
+    copyPkg.addEventListener("click", function(){ copyText(fullPackage(d, risk, items, tabs), copyPkg); });
+    var shareBtn = document.createElement("button");
+    shareBtn.className = "copy-btn";
+    shareBtn.textContent = "Copy shareable link";
+    shareBtn.addEventListener("click", function(){ copyText(buildShareURL(d), shareBtn); });
+    var printBtn = document.createElement("button");
+    printBtn.className = "copy-btn";
+    printBtn.textContent = "Save as PDF";
+    printBtn.addEventListener("click", function(){ window.print(); });
+    actions.appendChild(copyPkg); actions.appendChild(shareBtn); actions.appendChild(printBtn);
+    body.appendChild(actions);
+
+    if (activeTab === "summary"){
+      var stats = document.createElement("div");
+      stats.className = "stat-grid";
+      stats.innerHTML =
+        '<div class="stat"><div class="n">' + risk.score + '</div><div class="l">active risk factors</div></div>' +
+        '<div class="stat"><div class="n">' + items.length + '</div><div class="l">checklist items</div></div>' +
+        '<div class="stat"><div class="n">' + gate.critical + '</div><div class="l">critical items</div></div>' +
+        '<div class="stat"><div class="n">' + (d.rolloutStrategy === "flag" ? "Staged" : "All at once") + '</div><div class="l">rollout mode</div></div>';
+      body.appendChild(stats);
+
+      var badge = document.createElement("span");
+      badge.className = "risk-badge " + risk.cls;
+      badge.textContent = risk.level + " risk";
+      var ph = document.createElement("div");
+      ph.className = "panel-head";
+      ph.style.marginTop = "16px";
+      var left = document.createElement("div");
+      left.innerHTML = '<h2>Risk Summary</h2><p class="sub">Computed from the toggles on the left</p>';
+      var right = document.createElement("div");
+      right.style.display = "flex"; right.style.gap = "10px"; right.style.alignItems = "center";
+      right.appendChild(badge);
+      ph.appendChild(left); ph.appendChild(right);
+      body.appendChild(ph);
+
+      var pre = document.createElement("pre");
+      pre.className = "md-block";
+      pre.textContent = genSummary(d, risk, gate);
+      body.appendChild(pre);
+      return;
+    }
+
+    if (activeTab === "checklist"){
+      var ph2 = document.createElement("div");
+      ph2.className = "panel-head";
+      ph2.innerHTML = '<h2>PR Checklist</h2><p class="sub">Tick items as you complete them. Critical items block the gate.</p>';
+      body.appendChild(ph2);
+
+      items.forEach(function(it){
+        var row = document.createElement("label");
+        row.className = "checklist-item" + (it.critical ? " critical" : "") + (checkedItems[it.id] ? " done" : "");
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!checkedItems[it.id];
+        cb.addEventListener("change", function(){
+          checkedItems[it.id] = cb.checked;
+          renderAll();
+        });
+        var span = document.createElement("span");
+        span.className = "ci-label";
+        span.innerHTML = it.text + (it.critical ? '<span class="critical-tag">Critical</span>' : '');
+        row.appendChild(cb); row.appendChild(span);
+        body.appendChild(row);
+      });
+
+      var cbtn = document.createElement("button");
+      cbtn.className = "copy-btn";
+      cbtn.style.marginTop = "10px";
+      cbtn.textContent = "Copy checklist as Markdown";
+      cbtn.addEventListener("click", function(){ copyText(genChecklist(d, risk, items), cbtn); });
+      body.appendChild(cbtn);
+      return;
+    }
+
+    // generic tab
+    var activeDef = tabs.find(function(t){ return t.id === activeTab; });
+    if (!activeDef) return;
+    var out = activeDef.render();
+
+    var ph3 = document.createElement("div");
+    ph3.className = "panel-head";
+    ph3.innerHTML = "<h2>" + activeDef.label + "</h2>";
+    var cbtn2 = document.createElement("button");
+    cbtn2.className = "copy-btn";
+    cbtn2.textContent = "Copy";
+    cbtn2.addEventListener("click", function(){ copyText(out.text, cbtn2); });
+    ph3.appendChild(cbtn2);
+    body.appendChild(ph3);
+
+    var pre2 = document.createElement("pre");
+    pre2.className = out.type === "code" ? "code" : "md-block";
+    pre2.textContent = out.text;
+    body.appendChild(pre2);
+  }
+
+  // ---------- init ----------
+  renderFAQ();
+  loadFromURL();
+  renderAll();
+
+  window.addEventListener("error", function(){ /* keep UI usable */ });
+
+})();
+</script>
+</body>
+</html>

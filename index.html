@@ -805,7 +805,7 @@
       rolloutStrategy: val("rolloutStrategy") || "flag",
       flagName: safe(val("flagName"), "new_feature"),
       cleanupDate: safe(val("cleanupDate"), todayPlus(42)),
-      canaryStages: safe(val("canaryStages"), "1, 5, 10, 25, 50, 100"),
+      canaryStages: safe(val("canaryStages"), "1, 5, 10, 25, 50, 100").replace(/[^0-9,\s]/g, ""),
       blueGreenSwitch: safe(val("blueGreenSwitch"), "dns"),
       rollingBatch: Math.max(1, num("rollingBatch", 1)),
       rollingInterval: Math.max(1, num("rollingInterval", 30)),

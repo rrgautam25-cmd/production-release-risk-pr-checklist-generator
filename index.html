@@ -1,1 +1,1987 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deploy Ready — Production Release Risk &amp; PR Checklist Generator | Royal Peacock &amp; Gold Edition</title>
+<meta name="description" content="Free, no-login production release risk and PR checklist generator. Get a strict Go/No-Go gate, evidence-based checklist, DB migration plan, async payload strategy, cache versioning, feature flag config, rollback triggers, and Jira / GitHub issue export — all in your browser.">
+<meta name="keywords" content="release checklist, production readiness, deployment risk, PR checklist, go no-go gate, rollback plan, database migration, feature flag, canary deployment, blue-green deployment, DevOps, SRE">
+<meta name="author" content="Deploy Ready">
+<meta property="og:title" content="Deploy Ready — Production Release Risk & PR Checklist Generator">
+<meta property="og:description" content="Free, no-login production release risk and PR checklist generator. Strict Go/No-Go gate, evidence-based checklist, and rollback triggers.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://deploy-ready.pages.dev">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Deploy Ready — Production Release Risk & PR Checklist Generator">
+<meta name="twitter:description" content="Free, no-login production release risk and PR checklist generator.">
+<link rel="canonical" href="https://deploy-ready.pages.dev">
 
+<!-- Structured data (SEO). The FAQPage schema is generated automatically from the FAQ array in the script below. -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Deploy Ready — Production Release Risk & PR Checklist Generator","url":"https://deploy-ready.pages.dev","applicationCategory":"DeveloperApplication","operatingSystem":"Any (runs in the browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free production release risk and PR checklist generator with a strict Go/No-Go gate, rollback triggers and Jira / GitHub export."}
+</script>
+
+<!-- Apply saved theme BEFORE first paint so there is no dark/light flash -->
+<script>
+(function(){ try{ var t = localStorage.getItem("deployReady_theme"); if(t === "light" || t === "dark"){ document.documentElement.setAttribute("data-theme", t); } }catch(e){} })();
+</script>
+
+<style>
+  /* =====================================================================
+     ROYAL PEACOCK & GOLD EDITION — THEME VARIABLES
+     Dark = default. Light = "Royal Ivory". Edit colours here only.
+     ===================================================================== */
+  :root, :root[data-theme="dark"]{
+    --bg:#04060f;
+    --card-a:#0a1128;
+    --card-b:#070d1d;
+    --input-bg:#03050c;
+    --code-bg:#03050c;
+    --code-text:#d8deec;
+    --text:#e2e8f0;
+    --text-soft:#cbd5e1;
+    --text-gold:#f3e5ab;
+    --text-mute:#8494ad;
+    --gold:#d4af37;
+    --gold-dim:#b8860b;
+    --teal:#00897b;
+    --teal-tint:rgba(0,137,123,0.06);
+    --teal-tint-hover:rgba(0,137,123,0.13);
+    --gold-tint:rgba(212,175,55,0.10);
+    --h-grad-1:#fff5cc; --h-grad-2:#f3e5ab; --h-grad-3:#d4af37;
+    --switch-off:#1e293b;
+    --switch-knob:#cbd5e1;
+    --track:#0a1128;
+    --red:#e1615a; --green:#3fb950;
+    --page-glow-1:rgba(212,175,55,0.08); --page-glow-2:rgba(0,137,123,0.08);
+    --shadow-card:0 0 25px rgba(212,175,55,0.08), inset 0 0 15px rgba(0,137,123,0.04);
+    --scroll-thumb:#1e293b;
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f1e3;
+    --card-a:#fffdf6;
+    --card-b:#fbf5e2;
+    --input-bg:#ffffff;
+    --code-bg:#fffaf0;
+    --code-text:#1e293b;
+    --text:#1e293b;
+    --text-soft:#334155;
+    --text-gold:#6b4f00;
+    --text-mute:#64748b;
+    --gold:#b8860b;
+    --gold-dim:#8a6508;
+    --teal:#00695c;
+    --teal-tint:rgba(0,105,92,0.06);
+    --teal-tint-hover:rgba(0,105,92,0.12);
+    --gold-tint:rgba(184,134,11,0.10);
+    --h-grad-1:#8a6508; --h-grad-2:#b8860b; --h-grad-3:#6b4f00;
+    --switch-off:#cbd5e1;
+    --switch-knob:#ffffff;
+    --track:#efe6cc;
+    --red:#c0392b; --green:#1e8e3e;
+    --page-glow-1:rgba(184,134,11,0.10); --page-glow-2:rgba(0,105,92,0.07);
+    --shadow-card:0 4px 24px rgba(138,101,8,0.12);
+    --scroll-thumb:#d6c58a;
+  }
+
+  :root{
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 85% -10%, var(--page-glow-1), transparent 60%),
+      radial-gradient(900px 500px at 5% 0%, var(--page-glow-2), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    min-height:100vh;
+    transition:background-color .2s ease, color .2s ease;
+  }
+  a{color:var(--gold);}
+  code{font-family:var(--mono); font-size:0.92em; background:var(--gold-tint); padding:1px 5px; border-radius:4px; color:var(--text-gold);}
+  .wrap{max-width:1320px;margin:0 auto;padding:28px 20px 60px;}
+
+  /* ---------- Header ---------- */
+  header.top{
+    display:flex;flex-direction:column;gap:6px;
+    padding-bottom:22px;margin-bottom:26px;
+    border-bottom:2px solid var(--teal);
+    position:relative;
+  }
+  header.top::after{
+    content:"";position:absolute;bottom:-2px;left:0;right:0;height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .kicker{
+    display:flex;align-items:center;gap:10px;
+    color:var(--text-gold); font-size:13px; letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px var(--gold-tint);}
+  h1{
+    font-size:30px;margin:2px 0 4px;font-weight:700;letter-spacing:-0.01em;
+    background:linear-gradient(135deg, var(--h-grad-1), var(--h-grad-2), var(--h-grad-3));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    width:fit-content; max-width:100%;
+  }
+  header.top p{margin:0;color:var(--text-soft);font-size:14.5px;max-width:760px;}
+
+  .theme-toggle{
+    position:absolute; top:0; right:0;
+    background:var(--gold-tint); border:1px solid var(--gold-dim); color:var(--text-gold);
+    border-radius:20px; padding:7px 14px; font-size:12.5px; cursor:pointer; font-family:var(--sans);
+  }
+  .theme-toggle:hover{border-color:var(--gold);}
+
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:linear-gradient(135deg, #00695c, #004d40);
+    border:1px solid var(--gold);
+    color:#f3e5ab;font-size:12px;padding:5px 12px;border-radius:20px;
+    box-shadow:0 2px 8px rgba(0,105,92,0.3);
+  }
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:#d4af37;}
+  .royal-badge{
+    display:inline-block; background:linear-gradient(135deg, #00695c, #004d40); color:#f3e5ab;
+    padding:8px 18px; font-weight:600; border-radius:20px; font-size:12.5px; margin-bottom:15px;
+    border:1px solid var(--gold); box-shadow:0 4px 12px rgba(0,105,92,0.4); letter-spacing:0.02em;
+  }
+
+  /* ---------- Layout / cards ---------- */
+  .grid{display:grid;grid-template-columns:400px minmax(0,1fr);gap:22px;align-items:start;}
+  @media (max-width: 1000px){ .grid{grid-template-columns:1fr;} }
+
+  /* Gradient gold border that keeps rounded corners (border-image would not) */
+  .card{
+    border:2px solid transparent; border-radius:12px; padding:22px; min-width:0;
+    background:
+      linear-gradient(145deg, var(--card-a), var(--card-b)) padding-box,
+      linear-gradient(to bottom right, #f3e5ab, #b8860b, #d4af37) border-box;
+    box-shadow:var(--shadow-card);
+  }
+  .form-card{position:sticky; top:16px; max-height:calc(100vh - 32px); overflow-y:auto;}
+  @media (max-width:1000px){ .form-card{position:static; max-height:none; overflow:visible;} }
+
+  fieldset{
+    border:1px solid var(--teal) !important; margin:0 0 18px; padding:16px 18px; border-radius:10px;
+    background:var(--teal-tint); min-width:0;
+  }
+  fieldset legend{
+    font-size:12px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--text-gold); padding:0 10px; font-weight:600;
+  }
+  .field{margin-bottom:12px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block;font-size:13px;color:var(--text-soft);margin-bottom:5px;font-weight:500;}
+  .hint{font-size:11.5px;color:var(--text-mute);margin-top:4px;}
+  input[type=text], input[type=number], input[type=date], select, textarea{
+    width:100%; background:var(--input-bg); border:1px solid var(--gold);
+    color:var(--text-gold); padding:9px 12px; border-radius:8px; font-size:13.5px;
+    font-family:var(--sans); transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:none; border-color:var(--gold-dim); box-shadow:0 0 0 3px var(--gold-tint);
+  }
+  select option{background:var(--card-b);color:var(--text-gold);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:480px){ .row2{grid-template-columns:1fr;} }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--teal-tint); border:1px solid var(--teal);
+    border-radius:8px; padding:10px 12px; cursor:pointer; user-select:none;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .toggle-row:hover, .toggle-row:focus-visible{background:var(--teal-tint-hover);border-color:var(--gold-dim);outline:none;}
+  .toggle-row .label-block{display:flex; flex-direction:column; gap:2px;}
+  .toggle-row .label-block span.t{font-size:13.5px; color:var(--text);font-weight:500;}
+  .toggle-row .label-block span.d{font-size:11.5px; color:var(--text-mute);}
+  .switch{
+    width:38px;height:22px;border-radius:20px;background:var(--switch-off);position:relative;
+    flex:0 0 auto; transition:background .15s ease; margin-left:12px; border:1px solid var(--gold-dim);
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--switch-knob);transition:transform .15s ease;
+  }
+  .toggle-row.on .switch{background:var(--teal);}
+  .toggle-row.on .switch::after{transform:translateX(16px); background:#fff5cc;}
+  .toggle-row + .toggle-row{margin-top:8px;}
+  .sub-panel{
+    margin-top:10px; padding:12px; border-left:2px solid var(--teal);
+    display:none; gap:10px; flex-direction:column;
+    background:var(--teal-tint); border-radius:0 8px 8px 0;
+  }
+  .sub-panel.show{display:flex;}
+
+  /* ---------- Risk / gate ---------- */
+  .risk-badge{
+    display:inline-flex; align-items:center; gap:8px; padding:5px 14px;
+    border-radius:20px; font-size:12.5px; font-weight:600; border:1px solid;
+  }
+  .risk-low{background:rgba(63,185,80,0.12); color:var(--green); border-color:rgba(63,185,80,0.35);}
+  .risk-medium{background:var(--gold-tint); color:var(--gold); border-color:var(--gold-dim);}
+  .risk-high{background:rgba(225,97,90,0.12); color:var(--red); border-color:rgba(225,97,90,0.35);}
+
+  .gate-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    padding:16px 18px; border-radius:10px; margin-bottom:16px; border:1px solid;
+  }
+  .gate-banner.blocked{background:rgba(225,97,90,0.08); border-color:rgba(225,97,90,0.4);}
+  .gate-banner.conditional{background:var(--gold-tint); border-color:var(--gold);}
+  .gate-banner.ready{background:rgba(63,185,80,0.08); border-color:rgba(63,185,80,0.4);}
+  .gate-banner .g-left{display:flex; align-items:center; gap:12px;}
+  .gate-banner .g-icon{font-size:22px;}
+  .gate-banner .g-title{font-size:14.5px; font-weight:600; color:var(--text-gold);}
+  .gate-banner .g-sub{font-size:12px; color:var(--text-soft); margin-top:2px;}
+  .gate-banner .g-right{font-size:12px; color:var(--text-mute); text-align:right;}
+  .gate-banner .tier{display:block; margin-top:3px; color:var(--text-gold); font-weight:600;}
+
+  .progress-track{
+    height:8px; background:var(--track); border-radius:20px; overflow:hidden; margin:10px 0 18px;
+    border:1px solid var(--teal);
+  }
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--gold), var(--teal)); border-radius:20px; transition:width .3s ease;}
+
+  .tabs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+  .tab-btn{
+    background:var(--card-b); border:1px solid var(--teal); color:var(--text-soft);
+    padding:8px 14px; border-radius:7px; font-size:13px; cursor:pointer; font-family:var(--sans);
+    transition:all .15s ease;
+  }
+  .tab-btn.active{background:var(--gold-tint); color:var(--text-gold); border-color:var(--gold);}
+  .tab-btn:hover{color:var(--text-gold);border-color:var(--gold-dim);}
+  @media (max-width:600px){
+    .tabs{flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px;}
+    .tab-btn{flex:0 0 auto;}
+  }
+
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px; flex-wrap:wrap;}
+  .panel-head h2, .panel-head h3{font-size:16px; margin:0; font-weight:600; color:var(--text-gold);}
+  .panel-head p.sub{margin:2px 0 0; font-size:12.5px; color:var(--text-mute);}
+  .block-gap{margin-top:18px;}
+
+  .copy-btn{
+    background:var(--gold-tint); border:1px solid var(--gold-dim); color:var(--text-gold);
+    padding:7px 14px; border-radius:7px; font-size:12.5px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-family:var(--sans);
+    transition:all .15s ease;
+  }
+  .copy-btn:hover{border-color:var(--gold);}
+  .copy-btn.copied{border-color:var(--teal); color:var(--teal);}
+  .copy-btn.primary{background:linear-gradient(135deg, #b8860b, #d4af37); border-color:var(--gold); color:#04060f; font-weight:600;}
+  .copy-btn.primary:hover{opacity:.9;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; margin-bottom:16px;}
+
+  pre.code, .md-block{
+    background:var(--code-bg); border:1px solid var(--teal); border-radius:8px;
+    padding:16px 18px; font-family:var(--mono); font-size:12.8px; line-height:1.7;
+    color:var(--code-text); margin:0;
+  }
+  pre.code{overflow-x:auto; white-space:pre;}
+  .md-block{white-space:pre-wrap; overflow-wrap:anywhere;}
+
+  .not-applicable{padding:26px; text-align:center; color:var(--text-mute); font-size:13.5px; border:1px dashed var(--teal); border-radius:8px;}
+
+  .checklist-item{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 12px;
+    background:var(--teal-tint); border:1px solid var(--teal); border-radius:7px; margin-bottom:8px;
+    transition:background .15s ease;
+  }
+  .checklist-item:hover{background:var(--teal-tint-hover);}
+  .checklist-item input[type=checkbox]{width:16px; height:16px; margin-top:2px; accent-color:var(--teal); cursor:pointer; flex:0 0 auto;}
+  .checklist-item .ci-label{font-size:13.5px; color:var(--text); cursor:pointer; overflow-wrap:anywhere;}
+  .checklist-item.critical{border-left:3px solid var(--red);}
+  .checklist-item.done .ci-label{text-decoration:line-through; color:var(--text-mute);}
+  .critical-tag{
+    font-size:10px; text-transform:uppercase; letter-spacing:0.05em;
+    background:rgba(225,97,90,0.15); color:var(--red); padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:600;
+  }
+
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:4px;}
+  @media(max-width:700px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--teal-tint); border:1px solid var(--teal); border-radius:8px; padding:12px 14px;}
+  .stat .n{font-size:18px; font-weight:650; color:var(--text-gold);}
+  .stat .l{font-size:11.5px; color:var(--text-mute); margin-top:2px;}
+
+  /* Risk gauge (0-100) */
+  .gauge-row{display:flex; align-items:center; gap:18px; margin:16px 0; flex-wrap:wrap;}
+  .gauge{
+    width:120px; height:120px; border-radius:50%; position:relative; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 3px var(--gold-tint);
+  }
+  .gauge::before{content:""; position:absolute; inset:9px; border-radius:50%; background:var(--card-b);}
+  .gauge .g-inner{position:relative; text-align:center;}
+  .gauge .g-num{font-size:26px; font-weight:800; color:var(--text-gold); line-height:1;}
+  .gauge .g-lbl{font-size:9.5px; color:var(--text-mute); text-transform:uppercase; letter-spacing:0.06em; margin-top:3px;}
+  .gauge-legend{font-size:12.5px; color:var(--text-soft); max-width:420px;}
+
+  /* ---------- SEO content ---------- */
+  .content-section{margin-top:38px; padding-top:26px; border-top:1px solid var(--teal);}
+  .content-section h2{
+    font-size:22px; margin:0 0 8px; font-weight:650; letter-spacing:-0.01em;
+    background:linear-gradient(135deg, var(--h-grad-1), var(--h-grad-2), var(--h-grad-3));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; width:fit-content; max-width:100%;
+  }
+  .content-section h3{font-size:17px; margin:24px 0 6px; font-weight:600; color:var(--text-gold);}
+  .content-section h4{font-size:14.5px; margin:16px 0 4px; font-weight:600; color:var(--text);}
+  .content-section p, .content-section li{font-size:14px; color:var(--text-soft); line-height:1.75;}
+  .content-section ul, .content-section ol{padding-left:20px; margin:8px 0;}
+  .content-section li{margin-bottom:6px;}
+  .content-grid{display:grid; grid-template-columns:1fr 1fr; gap:26px;}
+  @media(max-width:820px){.content-grid{grid-template-columns:1fr;}}
+
+  figure.img-slot{margin:30px 0; text-align:center;}
+  figure.img-slot img{max-width:100%; height:auto; border-radius:10px; border:2px solid var(--gold); box-shadow:0 4px 20px rgba(212,175,55,0.2);}
+  figure.img-slot figcaption{font-size:12px; color:var(--text-soft); margin-top:8px;}
+
+  #futureKeywords:empty{display:none;}
+
+  .faq-item{border:1px solid var(--teal); border-radius:8px; margin-bottom:8px; background:var(--teal-tint);}
+  .faq-q{
+    padding:12px 14px; font-size:14px; font-weight:550; cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center; gap:10px; color:var(--text);
+  }
+  .faq-q:hover{color:var(--text-gold);}
+  .faq-a{padding:0 14px 14px; font-size:13.5px; color:var(--text-soft); display:none; line-height:1.7;}
+  .faq-item.open .faq-a{display:block;}
+  .faq-item.open .faq-q{color:var(--text-gold);}
+  .faq-arrow{transition:transform .15s ease; color:var(--text-mute);}
+  .faq-item.open .faq-arrow{transform:rotate(90deg);}
+
+  .author-box{display:flex; gap:14px; align-items:flex-start; background:var(--teal-tint); border:1px solid var(--teal); border-radius:10px; padding:16px; margin-top:14px;}
+  .author-avatar{
+    width:46px; height:46px; border-radius:50%; flex:0 0 auto;
+    background:linear-gradient(135deg, #d4af37, #00897b);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:#04060f; border:1px solid var(--gold);
+  }
+  .author-box .a-name{font-size:14px; font-weight:600; color:var(--text-gold);}
+  .author-box .a-role{font-size:12px; color:var(--text-mute); margin-bottom:4px;}
+  .author-box .a-bio{font-size:12.5px; color:var(--text-soft); line-height:1.6;}
+
+  .sources-list{list-style:none; padding:0 !important; margin:8px 0 0;}
+  .sources-list li{font-size:13px; padding:8px 0; border-bottom:1px solid var(--teal);}
+  .sources-list li:last-child{border-bottom:none;}
+  .updated-note{font-size:12px; color:var(--text-mute); margin-top:6px;}
+  .cta-btn{display:inline-block; padding:12px 26px; background:linear-gradient(135deg,#b8860b,#d4af37); color:#04060f !important; text-decoration:none; border-radius:8px; font-weight:600;}
+
+  footer.foot{margin-top:36px; padding-top:18px; border-top:2px solid var(--teal); color:var(--text-mute); font-size:12px; position:relative;}
+  footer.foot::before{content:""; position:absolute; top:-2px; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+
+  kbd{background:var(--gold-tint); border:1px solid var(--gold-dim); border-radius:4px; padding:1px 6px; font-size:11px; color:var(--text-gold); font-family:var(--mono);}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:linear-gradient(145deg, var(--card-a), var(--card-b)); border:1px solid var(--gold);
+    color:var(--text-gold); padding:12px 22px; border-radius:8px; font-size:13px;
+    opacity:0; pointer-events:none; transition:all .25s ease; z-index:1000; box-shadow:0 8px 30px rgba(212,175,55,0.2);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  ::selection{background:rgba(212,175,55,0.3);}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:4px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--gold-dim);}
+
+  /* Mobile: 16px inputs stop iOS from zooming on focus */
+  @media (max-width:600px){
+    .wrap{padding:18px 12px 50px;}
+    h1{font-size:25px;}
+    input[type=text], input[type=number], input[type=date], select{font-size:16px;}
+    .card{padding:16px;}
+    .theme-toggle{position:static; align-self:flex-start; margin-bottom:8px;}
+  }
+
+  /* Print / Save as PDF: output panel + content only */
+  @media print{
+    body{background:#fff; color:#000;}
+    .form-card, .btn-row, .tabs, .theme-toggle, .toast, .badge-row{display:none !important;}
+    .grid{display:block;}
+    .card{border:1px solid #999; background:#fff; box-shadow:none;}
+    .md-block, pre.code{color:#000; background:#fff; border:1px solid #999;}
+    h1, .content-section h2{-webkit-text-fill-color:#000; color:#000; background:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HEADER ============ -->
+  <header class="top">
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between dark and light mode">☀ Light mode</button>
+    <div class="kicker"><span class="dot"></span> DEPLOYMENT RISK TOOLING</div>
+    <h1>Deploy Ready</h1>
+    <p>Describe one change. Get a short, code-review-ready checklist plus the exact config, migration steps, and rollback trigger it actually needs — nothing your infrastructure should already be enforcing for you.</p>
+    <div class="badge-row">
+      <span class="badge"><span class="dot"></span> 100% Free</span>
+      <span class="badge"><span class="dot"></span> No Login Required</span>
+      <span class="badge"><span class="dot"></span> Works in Browser</span>
+      <span class="badge"><span class="dot"></span> Data Never Leaves Your Device</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ INPUT FORM ============ -->
+    <div class="card form-card">
+      <div class="royal-badge">✨ Royal Peacock &amp; Gold Edition</div>
+
+      <fieldset>
+        <legend>Quick presets</legend>
+        <div class="field">
+          <label for="presetSelect">Start from an example scenario</label>
+          <select id="presetSelect">
+            <option value="">— Choose a preset (optional) —</option>
+            <option value="hotfix">Hotfix — small, low risk</option>
+            <option value="schema">Schema migration — add a column</option>
+            <option value="queue">Queue payload rename</option>
+            <option value="bigbang">Big-bang release — everything at once</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Change basics</legend>
+        <div class="field">
+          <label for="changeName">Change / service name</label>
+          <input type="text" id="changeName" placeholder="e.g. checkout-v2" value="checkout">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="releaseEnv">Target environment</label>
+            <select id="releaseEnv">
+              <option value="production">Production</option>
+              <option value="preprod">Pre-production</option>
+              <option value="staging">Staging</option>
+              <option value="dr">DR / secondary region</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="releaseDate">Release date</label>
+            <input type="date" id="releaseDate">
+          </div>
+        </div>
+        <div class="field">
+          <label for="releaseWindow">Release window (optional)</label>
+          <input type="text" id="releaseWindow" placeholder="e.g. 14:00–15:00 UTC">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Ownership &amp; escalation</legend>
+        <div class="field">
+          <label for="teamOwner">Team owner</label>
+          <input type="text" id="teamOwner" placeholder="e.g. Payments Platform team">
+        </div>
+        <div class="field">
+          <label for="watcherName">Who watches the first 15 minutes?</label>
+          <input type="text" id="watcherName" placeholder="e.g. on-call engineer, @priya">
+        </div>
+        <div class="field">
+          <label for="escalationPath">Escalation path</label>
+          <input type="text" id="escalationPath" placeholder="e.g. on-call → eng manager → VP Eng">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Application risk</legend>
+
+        <div class="toggle-row" data-toggle="dbChange">
+          <div class="label-block">
+            <span class="t">Database schema change</span>
+            <span class="d">Adding, renaming, or dropping a column</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-dbChange">
+          <div class="field">
+            <label for="dbOperation">Operation</label>
+            <select id="dbOperation">
+              <option value="add">Add a column</option>
+              <option value="rename">Rename a column</option>
+              <option value="drop">Drop a column</option>
+            </select>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="dbTable">Table</label>
+              <input type="text" id="dbTable" placeholder="users" value="users">
+            </div>
+            <div class="field">
+              <label for="dbColumnOld">Old column</label>
+              <input type="text" id="dbColumnOld" placeholder="name" value="name">
+            </div>
+          </div>
+          <div class="field">
+            <label for="dbColumnNew">New column (leave blank if dropping only)</label>
+            <input type="text" id="dbColumnNew" placeholder="full_name" value="full_name">
+          </div>
+        </div>
+
+        <div class="toggle-row" data-toggle="asyncChange">
+          <div class="label-block">
+            <span class="t">Background worker / queue payload change</span>
+            <span class="d">Producer and consumer may deploy at different times</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-asyncChange">
+          <div class="row2">
+            <div class="field">
+              <label for="queueName">Job / event name</label>
+              <input type="text" id="queueName" placeholder="send_invoice" value="send_invoice">
+            </div>
+            <div class="field">
+              <label for="payloadOldField">Old payload field</label>
+              <input type="text" id="payloadOldField" placeholder="customer_id" value="customer_id">
+            </div>
+          </div>
+          <div class="field">
+            <label for="payloadNewField">New payload field</label>
+            <input type="text" id="payloadNewField" placeholder="customer" value="customer">
+          </div>
+        </div>
+
+        <div class="toggle-row" data-toggle="cacheChange">
+          <div class="label-block">
+            <span class="t">Cached / session object shape change</span>
+            <span class="d">Anything written into a cache is effectively a schema</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-cacheChange">
+          <div class="field">
+            <label for="cachePrefix">Cache key prefix</label>
+            <input type="text" id="cachePrefix" placeholder="user" value="user">
+          </div>
+        </div>
+
+        <div class="toggle-row" data-toggle="coldStart">
+          <div class="label-block">
+            <span class="t">Cold-start / warm-up capacity risk</span>
+            <span class="d">Instance needs time before it can safely take traffic</span>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div class="sub-panel" id="panel-coldStart">
+          <div class="row2">
+            <div class="field">
+              <label for="warmUpSeconds">Seconds to fully warm up</label>
+              <input type="number" id="warmUpSeconds" min="1" value="40">
+            </div>
+            <div class="field">
+              <label for="probePeriod">Probe check interval (sec)</label>
+              <input type="number" id="probePeriod" min="1" value="5">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Rollout strategy</legend>
+        <div class="field">
+          <label for="rolloutStrategy">How does the change reach users?</label>
+          <select id="rolloutStrategy">
+            <option value="flag">Feature flag — staged 0% → 100%</option>
+            <option value="canary">Canary deployment — 1% → 5% → 10% → 100%</option>
+            <option value="bluegreen">Blue-green deployment — full switch</option>
+            <option value="rolling">Rolling deployment — instance by instance</option>
+            <option value="all">All users at once</option>
+            <option value="dark">Dark launch — shadow traffic only</option>
+          </select>
+        </div>
+
+        <!-- One sub-panel per strategy. IDs MUST be "panel-" + the option value above.
+             The "All users at once" option intentionally has no panel. -->
+        <div class="sub-panel" id="panel-flag">
+          <div class="row2">
+            <div class="field">
+              <label for="flagName">Flag name</label>
+              <input type="text" id="flagName" placeholder="new_checkout" value="new_checkout">
+            </div>
+            <div class="field">
+              <label for="cleanupDate">Remove-by date</label>
+              <input type="date" id="cleanupDate">
+            </div>
+          </div>
+        </div>
+        <div class="sub-panel" id="panel-canary">
+          <div class="field">
+            <label for="canaryStages">Canary stages (% of traffic, comma separated)</label>
+            <input type="text" id="canaryStages" placeholder="1, 5, 10, 25, 50, 100" value="1, 5, 10, 25, 50, 100">
+          </div>
+          <div class="field">
+            <label for="canarySoak">Soak time per stage (minutes)</label>
+            <input type="number" id="canarySoak" min="1" value="15">
+          </div>
+        </div>
+        <div class="sub-panel" id="panel-bluegreen">
+          <div class="field">
+            <label for="blueGreenSwitch">Traffic switch method</label>
+            <select id="blueGreenSwitch">
+              <option value="dns">DNS / load balancer swap</option>
+              <option value="service">Service mesh routing</option>
+              <option value="manual">Manual cutover</option>
+            </select>
+          </div>
+        </div>
+        <div class="sub-panel" id="panel-rolling">
+          <div class="row2">
+            <div class="field">
+              <label for="rollingBatch">Batch size (instances)</label>
+              <input type="number" id="rollingBatch" min="1" value="1">
+            </div>
+            <div class="field">
+              <label for="rollingInterval">Interval between batches (sec)</label>
+              <input type="number" id="rollingInterval" min="1" value="30">
+            </div>
+          </div>
+        </div>
+        <div class="sub-panel" id="panel-dark">
+          <div class="field">
+            <label for="darkTraffic">Shadow traffic percentage</label>
+            <input type="number" id="darkTraffic" min="1" max="100" value="10">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Rollback trigger</legend>
+        <div class="row2">
+          <div class="field">
+            <label for="errorRate">Error rate threshold (%)</label>
+            <input type="number" id="errorRate" min="0" step="0.1" value="1">
+          </div>
+          <div class="field">
+            <label for="watchWindow">Window (minutes)</label>
+            <input type="number" id="watchWindow" min="1" value="2">
+          </div>
+        </div>
+        <div class="field">
+          <label for="latencyMult">Latency ceiling (× normal p95)</label>
+          <input type="number" id="latencyMult" min="1" step="0.1" value="2">
+        </div>
+      </fieldset>
+
+    </div>
+
+    <!-- ============ OUTPUT PANEL ============ -->
+    <div class="card">
+      <div id="gateContainer"></div>
+      <div class="tabs" id="tabBar"></div>
+      <div class="content-body" id="contentBody"></div>
+    </div>
+
+  </div>
+
+  <!-- ============ SEO CONTENT ============ -->
+  <section class="content-section">
+    <h2>What is a Production Release Risk &amp; PR Checklist Generator?</h2>
+    <p>A production release risk &amp; PR checklist generator is a structured, evidence-based guide that a team works through before code reaches live users. Unlike a generic to-do list, it is tied to one specific candidate — a release, a build, an environment — and it asks for proof, not just a tick.</p>
+    <p>The goal is to catch the categories of failure that only appear when a change meets real traffic: schema changes that lock a table, queue payloads that old consumers cannot read, cached objects whose shape changed without a version bump, and probes that kill an instance right as it is about to become ready.</p>
+    <p>This production release risk &amp; PR checklist generator builds that checklist from the actual risk factors you flag. If you enable the database toggle, you get a migration plan. If you enable the async toggle, you get a backward-compatible payload strategy. If you enable the cold-start toggle, you get probe numbers that match your real warm-up time.</p>
+    <p>Everything else — infrastructure plumbing, certificates, image provenance, autoscaling — is left out, because those belong in your pipeline, not on a person's mental checklist. A production release risk &amp; PR checklist generator should be as long as your application's risk requires, and no longer.</p>
+
+    <!-- =====================================================================
+         FUTURE KEYWORD SECTION — ADD NEW CONTENT HERE
+         When Google Search Console suggests new keywords or questions, paste
+         new blocks between the two markers below. Use normal HTML, e.g.:
+           <h3>Your new keyword heading</h3>
+           <p>Your new paragraph text…</p>
+           <ul><li>…</li></ul>
+         Styling is automatic. You do NOT need to touch any other code.
+         The wrapper hides itself while it is empty.
+         ===================================================================== -->
+    <div id="futureKeywords">
+      <!-- ▼▼▼ PASTE NEW KEYWORD CONTENT BELOW THIS LINE ▼▼▼ -->
+
+      <!-- ▲▲▲ PASTE NEW KEYWORD CONTENT ABOVE THIS LINE ▲▲▲ -->
+    </div>
+    <!-- ================== END FUTURE KEYWORD SECTION ================== -->
+
+    <!-- Images are filled in by the script from SITE_CONFIG.IMAGES (see the <script> at the bottom).
+         To change an image, edit its URL there — nowhere else. -->
+    <figure class="img-slot" data-image="hero"></figure>
+
+    <div class="content-grid">
+      <div>
+        <h3>Why release checklists matter</h3>
+        <ul>
+          <li><strong>Missed migration steps</strong> are one of the most common causes of post-deploy incidents. An expand/contract plan removes the guesswork.</li>
+          <li><strong>Backward-incompatible payloads</strong> break silently when producers and consumers deploy at different times.</li>
+          <li><strong>Cache shape changes</strong> cause errors that look like bugs but are really schema drift.</li>
+          <li><strong>Aggressive readiness probes</strong> restart healthy instances during warm-up, turning a rollout into a loop.</li>
+          <li><strong>Undefined rollback triggers</strong> turn a two-minute fix into a forty-minute debate.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Common mistakes this tool helps you avoid</h3>
+        <ul>
+          <li>Shipping a schema change and the code that depends on it in the same deploy.</li>
+          <li>Renaming a queue payload field without a dual-write window.</li>
+          <li>Changing a cached object's shape without bumping a cache key version.</li>
+          <li>Using a single readiness probe for an app that needs a long warm-up.</li>
+          <li>Rolling out to all users at once when a feature flag was available.</li>
+          <li>Leaving a feature flag in production long after the rollout finished.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>What this tool cannot do</h3>
+    <p>This production release risk &amp; PR checklist generator cannot authenticate your evidence, run your migration, execute a rollback, or replace a human decision. It derives a risk profile from the toggles you set and produces a starting checklist — but the final call to ship belongs to a named, accountable owner. Treat the output as a structured prompt for review, not a substitute for one.</p>
+
+    <figure class="img-slot" data-image="workflow"></figure>
+
+    <h3>Who is this production release risk &amp; PR checklist generator for?</h3>
+    <p>This production release risk &amp; PR checklist generator is built for anyone involved in the deployment process — from a solo developer shipping a weekend patch to an enterprise SRE team coordinating a multi-service launch.</p>
+    <ul>
+      <li><strong>Software development teams:</strong> streamline deployment processes and keep quality consistent across every release.</li>
+      <li><strong>Project managers:</strong> make sure deployment projects stay on track and stop surprises before they ship.</li>
+      <li><strong>DevOps teams:</strong> keep deployments reliable, auditable, and efficient without adding process for its own sake.</li>
+      <li><strong>Site reliability engineers (SREs):</strong> enforce operational readiness before every launch, with evidence attached.</li>
+    </ul>
+    <p>Whether you are a seasoned professional or just getting started, this production release risk &amp; PR checklist generator gives you a clear, repeatable path from "we think it's ready" to "here's the proof."</p>
+
+    <h3>How to use this production release risk &amp; PR checklist generator</h3>
+    <p>Operating this production release risk &amp; PR checklist generator needs zero backend configuration and zero command-line execution. Follow this short workflow to generate your deployment package.</p>
+
+    <h4>Step 1: Define change basics</h4>
+    <p>Navigate to the tool interface and enter your unique identifier in the Change / service name field. Next, assign accountability by naming the team owner, the engineer who watches the first 15 minutes, and the escalation path. Naming a watcher is not bureaucracy — it is the difference between a two-minute fix and a forty-minute debate.</p>
+
+    <h4>Step 2: Configure application risk factors</h4>
+    <p>Evaluate your code changes and toggle the relevant application risk options. If your update modifies database tables, enable the Database schema change toggle and specify the exact operation, table name, and column headers. If your release impacts background queues, toggle asynchronous worker updates or cache shape modifications.</p>
+
+    <h4>Step 3: Establish rollout and rollback parameters</h4>
+    <p>Select your preferred distribution method under the rollout strategy section — feature flag, canary, blue-green, rolling, dark launch, or all-at-once. Define your safety thresholds by entering the acceptable error rate percentage, the evaluation time window in minutes, and the performance latency ceiling.</p>
+
+    <h4>Step 4: Review and export the package</h4>
+    <p>As you configure your inputs, the dashboard panel dynamically synthesizes them into a structured report. Review the computed risk score, verify the generated sections, and click "Copy full package", "Copy as GitHub Issue", or "Copy as Jira" to move the content straight into your pull request or ticket.</p>
+
+    <!-- Optional third image slot: add a URL in SITE_CONFIG.IMAGES.checklist to show it. Hidden while empty. -->
+    <figure class="img-slot" data-image="checklist"></figure>
+
+    <h3>Real-world examples</h3>
+    <p>Here are four changes where a production release risk &amp; PR checklist generator changes the outcome.</p>
+
+    <h4>1. Adding a column to a busy table</h4>
+    <p>An engineer adds a <code>full_name</code> column and renames the old <code>name</code> column in the same deploy. Without an expand/contract plan, the rename locks the table while traffic is live. With this production release risk &amp; PR checklist generator, the tool produces a four-deploy plan: add, dual-write, backfill, read new, then contract. The rename never touches a live table.</p>
+
+    <h4>2. Renaming a queue payload field</h4>
+    <p>A team renames <code>customer_id</code> to <code>customer.id</code> in a background job. If the producer and consumer deploy at different moments, the old consumer silently drops messages. This production release risk &amp; PR checklist generator gives you a dual-write producer, a backward-compatible consumer, and an explicit drain step before the old field is removed.</p>
+
+    <h4>3. Changing a cached object shape</h4>
+    <p>A cached session object gains a new field. Old readers still expect the previous shape and start throwing errors that look like bugs. The fix is a cache key version bump — the new code misses on the new key and rebuilds from the source of truth, while old keys expire on their own.</p>
+
+    <h4>4. A long warm-up on a new instance</h4>
+    <p>A new service needs 40 seconds before it can safely take traffic, but the readiness probe only allows 15 seconds of failures. Instances are killed right as they are about to be ready, and the rollout loops. This production release risk &amp; PR checklist generator calculates the correct startup probe threshold from your warm-up time and probe period.</p>
+
+    <h3>Manual checklist vs automated checklist</h3>
+    <p>A manual checklist lives in a wiki, a spreadsheet, or someone's memory. It drifts. The automated version of a production release risk &amp; PR checklist generator derives the checklist from the actual change, so the same input always produces the same output — reviewable, reproducible, and tied to evidence.</p>
+    <ul>
+      <li><strong>Manual:</strong> depends on who remembers what, and what they remembered last quarter.</li>
+      <li><strong>Automated:</strong> depends on the toggles you set and the rules behind them.</li>
+      <li><strong>Manual:</strong> hard to audit after an incident.</li>
+      <li><strong>Automated:</strong> every item is traceable back to a specific risk factor.</li>
+    </ul>
+
+    <h3>Why every engineering team needs this production release risk &amp; PR checklist generator</h3>
+    <p>Software teams save valuable hours of manual review by integrating a reliable production release risk &amp; PR checklist generator directly into their pull request workflow. Relying on manual checklists often leads to oversight, missed migration steps, and extended downtime during critical releases.</p>
+    <p>By integrating this automated utility, you establish a repeatable, auditable standard for every production push. It ensures that infrastructure boundaries are respected, team accountability is clearly established, and rollback triggers are defined long before a deployment goes live.</p>
+
+    <h3>Best practices for mitigating production release failures</h3>
+    <p>When deploying code changes to production environments, relying solely on automated scripts is rarely enough. Engineering teams must enforce strict operational disciplines to prevent catastrophic downtime and data loss.</p>
+    <ul>
+      <li><strong>Pre-deployment smoke testing:</strong> validate your container builds and database migrations in a staging environment that mirrors production architecture down to the exact resource limits.</li>
+      <li><strong>Feature flag isolation:</strong> wrap experimental features inside feature flags so they can be toggled off instantly without a full code rollback.</li>
+      <li><strong>Database rollback scripts:</strong> never execute a destructive schema modification without a tested, reversible migration script prepared beforehand.</li>
+      <li><strong>Real-time telemetry monitoring:</strong> keep your on-call SREs and engineering leads in the loop by tracking error rates, memory spikes, and latency ceilings during the critical first fifteen minutes post-release.</li>
+    </ul>
+
+    <h3>Frequently asked questions</h3>
+    <div id="faqContainer"></div>
+
+    <h3>Glossary of terms</h3>
+    <ul>
+      <li><strong>SRE:</strong> Site Reliability Engineering — a discipline that applies software engineering to operations.</li>
+      <li><strong>SLO:</strong> Service Level Objective — a target level of reliability for a service.</li>
+      <li><strong>Canary deployment:</strong> releasing to a small subset of users before a full rollout.</li>
+      <li><strong>Blue-green deployment:</strong> running two identical environments and switching traffic between them.</li>
+      <li><strong>Rollback:</strong> reverting a deployment to a previous known-good state.</li>
+      <li><strong>Feature flag:</strong> a toggle that enables or disables functionality without redeploying code.</li>
+      <li><strong>Expand/contract migration:</strong> a safe database migration pattern that adds, migrates, then removes.</li>
+    </ul>
+
+    <h3>Related tools and resources</h3>
+    <p>If this production release risk &amp; PR checklist generator was useful, you may also like these related tools on our site:</p>
+    <ul>
+      <li><a href="#" data-link="home" target="_blank" rel="noopener">EkanshHub Home — more developer tools</a></li>
+      <li><a href="#" data-link="contact" target="_blank" rel="noopener">Contact &amp; Feedback</a></li>
+    </ul>
+
+    <h3>About the author</h3>
+    <div class="author-box">
+      <div class="author-avatar">DR</div>
+      <div>
+        <div class="a-name">Deploy Ready</div>
+        <div class="a-role">Production engineering &amp; release tooling</div>
+        <div class="a-bio">Built from patterns observed across release checklists, SRE runbooks, and post-incident reviews. Focused on the small set of application-level decisions that a pipeline cannot make for you — schema compatibility, payload contracts, cache versioning, probe windows, and rollback authority.</div>
+      </div>
+    </div>
+    <p class="updated-note">Last updated: <span id="updatedDate"></span> · Tip: press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> anywhere to copy the full package.</p>
+
+    <h3>Sources and references</h3>
+    <ul class="sources-list">
+      <li><a href="https://sre.google/sre-book/reliable-product-launches/" target="_blank" rel="noopener">Google SRE — Reliable Product Launches at Scale</a></li>
+      <li><a href="https://aws.amazon.com/architecture/well-architected/" target="_blank" rel="noopener">AWS Well-Architected Framework — Operational Readiness</a></li>
+      <li><a href="https://learn.microsoft.com/azure/architecture/" target="_blank" rel="noopener">Microsoft Azure Architecture Center — Progressive Exposure</a></li>
+      <li><a href="https://csrc.nist.gov/Projects/ssdf" target="_blank" rel="noopener">NIST SSDF — Secure Software Development</a></li>
+      <li><a href="https://owasp.org/www-project-application-security-verification-standard/" target="_blank" rel="noopener">OWASP ASVS — Application Security Verification</a></li>
+      <li><a href="https://www.rfc-editor.org/rfc/rfc2606" target="_blank" rel="noopener">RFC 2606 — Reserved DNS Names</a></li>
+    </ul>
+
+    <h3>Disclaimer</h3>
+    <p>This production release risk &amp; PR checklist generator is built to assist engineering teams with deployment workflows and risk assessments. While designed for high precision, software environments vary — please independently verify all generated checklists, database commands, and rollback thresholds before executing live production changes. The site administrator assumes no liability for deployment errors or downtime.</p>
+    <p>We are continuously upgrading this technical utility to make it even more robust.</p>
+
+    <h3>We value your feedback</h3>
+    <p>Did this production release risk &amp; PR checklist generator help you? Was it easy to use? Do you have a suggestion for improvement?</p>
+    <p>Your feedback helps us make this production release risk &amp; PR checklist generator even better for everyone.</p>
+    <p style="text-align:center; margin-top:18px;">
+      <a class="cta-btn" href="#" data-link="contact" target="_blank" rel="noopener">💬 Leave a Comment on Our Website</a>
+    </p>
+  </section>
+
+  <footer class="foot">
+    Runs entirely in your browser — nothing you type here is sent anywhere. Your inputs auto-save locally so you can safely refresh the page. Built around the idea that a deployment checklist should be as long as your application's risk requires, and no longer.
+  </footer>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================================
+     SITE CONFIG — the ONLY place to change image URLs and site links.
+     • Change an image: edit its "src" below. Leave src as "" to hide it.
+     • The matching <figure data-image="..."> slots in the HTML fill themselves.
+     ===================================================================== */
+  var SITE_CONFIG = {
+    IMAGES: {
+      hero: {
+        src: "https://ekanshhub.com/wp-content/uploads/2026/09/1000319344-edited-1024x1015.jpg",
+        alt: "Production Release Risk & PR Checklist Generator Royal Peacock Edition Banner",
+        caption: "Royal Peacock & Gold Edition — standardize, automate, and secure your deployments"
+      },
+      workflow: {
+        src: "https://ekanshhub.com/wp-content/uploads/2026/09/1000319370-edited.png",
+        alt: "Production Release Risk & PR Checklist Generator 5-Step Workflow Chart",
+        caption: "The 5-step workflow: Configure → Analyze → Standardize → Generate → Protect"
+      },
+      // Optional 3rd image. Suggested: a mockup of the checklist dashboard with a red "blocked" banner.
+      checklist: {
+        src: "",
+        alt: "Deployment checklist dashboard with a blocked banner and critical tasks",
+        caption: "The generated checklist adapts to the risk factors you flag"
+      }
+    },
+    LINKS: {
+      home: "https://ekanshhub.com",
+      contact: "https://ekanshhub.com/contact"
+    }
+  };
+
+  /* ---------- state ---------- */
+  var state = { dbChange:false, asyncChange:false, cacheChange:false, coldStart:false };
+  var activeTab = "summary";
+  var checkedItems = {};      // checklist item id -> boolean
+  var lastPackageText = "";   // used by the Ctrl+Enter shortcut
+
+  var ROLLOUT_LABELS = { flag:"Feature flag", canary:"Canary", bluegreen:"Blue-green", rolling:"Rolling", all:"All at once", dark:"Dark launch" };
+  var ENV_LABELS = { production:"Production", preprod:"Pre-production", staging:"Staging", dr:"DR / secondary region" };
+  var SWITCH_LABELS = { dns:"DNS / load balancer swap", service:"service mesh routing", manual:"manual cutover" };
+
+  /* Every saved / shared form field. Add a new field's id here to include it in autosave + share links. */
+  var FIELD_IDS = [
+    "changeName","releaseEnv","releaseDate","releaseWindow","teamOwner","watcherName","escalationPath",
+    "dbOperation","dbTable","dbColumnOld","dbColumnNew",
+    "queueName","payloadOldField","payloadNewField","cachePrefix","warmUpSeconds","probePeriod",
+    "rolloutStrategy","flagName","cleanupDate","canaryStages","canarySoak","blueGreenSwitch","rollingBatch","rollingInterval","darkTraffic",
+    "errorRate","watchWindow","latencyMult"
+  ];
+  var STORAGE_KEY = "deployReadyDraft_v2";
+  var THEME_KEY = "deployReady_theme";
+
+  /* ---------- helpers ---------- */
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var el = $(id); return el ? el.value : ""; }
+  function num(id, fallback){ var v = parseFloat(val(id)); return isNaN(v) ? fallback : v; }
+  function safe(s, fallback){ s = (s || "").toString().trim(); return s.length ? s : fallback; }
+  function todayPlus(days){ var d = new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; });
+  }
+  /* Escapes text, then turns `code` spans into <code>. Keeps user input from injecting HTML. */
+  function fmtInline(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
+  function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "release"; }
+  function plural(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
+
+  function showToast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ---------- images + links from SITE_CONFIG ---------- */
+  function renderImages(){
+    document.querySelectorAll("[data-image]").forEach(function(slot){
+      var cfg = SITE_CONFIG.IMAGES[slot.getAttribute("data-image")];
+      if (!cfg || !cfg.src){ slot.style.display = "none"; return; }
+      var img = document.createElement("img");
+      img.src = cfg.src; img.alt = cfg.alt || ""; img.loading = "lazy"; img.decoding = "async";
+      img.addEventListener("error", function(){ slot.style.display = "none"; });
+      slot.appendChild(img);
+      if (cfg.caption){
+        var cap = document.createElement("figcaption");
+        cap.textContent = cfg.caption;
+        slot.appendChild(cap);
+      }
+    });
+  }
+  function applyLinks(){
+    document.querySelectorAll("[data-link]").forEach(function(a){
+      var url = SITE_CONFIG.LINKS[a.getAttribute("data-link")];
+      if (url) a.setAttribute("href", url);
+    });
+  }
+
+  /* ---------- theme toggle ---------- */
+  function currentTheme(){ return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"; }
+  function updateThemeButton(){
+    $("themeToggle").textContent = currentTheme() === "dark" ? "☀ Light mode" : "🌙 Dark mode";
+  }
+  $("themeToggle").addEventListener("click", function(){
+    var next = currentTheme() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+    updateThemeButton();
+  });
+  updateThemeButton();
+
+  /* ---------- toggles ---------- */
+  function setToggle(key, on){
+    state[key] = !!on;
+    var row = document.querySelector('[data-toggle="' + key + '"]');
+    if (row){ row.classList.toggle("on", state[key]); row.setAttribute("aria-checked", state[key] ? "true" : "false"); }
+    var panel = $("panel-" + key);
+    if (panel) panel.classList.toggle("show", state[key]);
+  }
+  document.querySelectorAll(".toggle-row[data-toggle]").forEach(function(row){
+    var key = row.getAttribute("data-toggle");
+    row.addEventListener("click", function(){ setToggle(key, !state[key]); renderAll(); });
+    row.addEventListener("keydown", function(ev){
+      if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); row.click(); }
+    });
+    row.setAttribute("tabindex", "0");
+    row.setAttribute("role", "switch");
+    row.setAttribute("aria-checked", "false");
+  });
+
+  /* ---------- rollout strategy sub-panel sync ----------
+     Panel id convention: "panel-" + <option value>. Shows the selected one, hides the rest.
+     "all" has no panel, so nothing is shown for it (correct). */
+  var rolloutSelect = $("rolloutStrategy");
+  var ROLLOUT_PANEL_IDS = ["panel-flag","panel-canary","panel-bluegreen","panel-rolling","panel-dark"];
+  function syncRolloutPanels(){
+    ROLLOUT_PANEL_IDS.forEach(function(id){ var p = $(id); if (p) p.classList.remove("show"); });
+    var target = $("panel-" + rolloutSelect.value);
+    if (target && ROLLOUT_PANEL_IDS.indexOf(target.id) !== -1) target.classList.add("show");
+  }
+  rolloutSelect.addEventListener("change", function(){ syncRolloutPanels(); renderAll(); });
+
+  var debounceTimer = null;
+  document.querySelectorAll("input, select").forEach(function(el){
+    if (el.id === "presetSelect") return;
+    el.addEventListener("input", function(){
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(renderAll, 120);
+    });
+  });
+
+  /* ---------- apply saved / shared / preset state ---------- */
+  function applyState(fields, toggles){
+    if (fields){
+      FIELD_IDS.forEach(function(id){
+        if (fields[id] === undefined) return;
+        var el = $(id);
+        if (!el) return;
+        if (el.tagName === "SELECT"){
+          var ok = Array.prototype.some.call(el.options, function(o){ return o.value === String(fields[id]); });
+          if (!ok) return;
+        }
+        el.value = fields[id];
+      });
+    }
+    if (toggles){
+      Object.keys(state).forEach(function(k){ if (toggles[k] !== undefined) setToggle(k, toggles[k]); });
+    }
+    syncRolloutPanels();
+  }
+
+  /* ---------- gather ---------- */
+  function parseStages(str){
+    var out = [];
+    String(str || "").split(",").forEach(function(p){
+      var n = parseFloat(p);
+      if (!isNaN(n) && n > 0 && n <= 100 && out.indexOf(n) === -1) out.push(n);
+    });
+    out.sort(function(a,b){ return a-b; });
+    if (!out.length) out = [1,5,10,25,50,100];
+    if (out[out.length-1] !== 100) out.push(100);
+    return out;
+  }
+
+  function gather(){
+    var strategy = val("rolloutStrategy") || "flag";
+    if (!ROLLOUT_LABELS[strategy]) strategy = "flag";
+    return {
+      changeName: safe(val("changeName"), "this change"),
+      releaseEnv: ENV_LABELS[val("releaseEnv")] ? val("releaseEnv") : "production",
+      releaseDate: safe(val("releaseDate"), ""),
+      releaseWindow: safe(val("releaseWindow"), ""),
+      teamOwner: safe(val("teamOwner"), "an assigned owner"),
+      hasOwner: safe(val("teamOwner"), "").length > 0,
+      watcherName: safe(val("watcherName"), "an assigned owner"),
+      hasWatcher: safe(val("watcherName"), "").length > 0,
+      escalationPath: safe(val("escalationPath"), "not defined yet"),
+      hasEscalation: safe(val("escalationPath"), "").length > 0,
+      dbChange: state.dbChange,
+      dbOperation: val("dbOperation") || "add",
+      dbTable: safe(val("dbTable"), "table"),
+      dbColumnOld: safe(val("dbColumnOld"), "old_column"),
+      dbColumnNew: safe(val("dbColumnNew"), "new_column"),
+      asyncChange: state.asyncChange,
+      queueName: safe(val("queueName"), "job_name"),
+      payloadOldField: safe(val("payloadOldField"), "old_field"),
+      payloadNewField: safe(val("payloadNewField"), "new_field"),
+      cacheChange: state.cacheChange,
+      cachePrefix: safe(val("cachePrefix"), "key"),
+      coldStart: state.coldStart,
+      warmUpSeconds: Math.max(1, num("warmUpSeconds", 40)),
+      probePeriod: Math.max(1, num("probePeriod", 5)),
+      rolloutStrategy: strategy,
+      flagName: safe(val("flagName"), "new_feature"),
+      cleanupDate: safe(val("cleanupDate"), todayPlus(42)),
+      canaryStages: parseStages(val("canaryStages")),
+      canarySoak: Math.max(1, num("canarySoak", 15)),
+      blueGreenSwitch: SWITCH_LABELS[val("blueGreenSwitch")] ? val("blueGreenSwitch") : "dns",
+      rollingBatch: Math.max(1, Math.round(num("rollingBatch", 1))),
+      rollingInterval: Math.max(1, Math.round(num("rollingInterval", 30))),
+      darkTraffic: Math.min(100, Math.max(1, num("darkTraffic", 10))),
+      errorRate: num("errorRate", 1),
+      watchWindow: Math.max(1, num("watchWindow", 2)),
+      latencyMult: num("latencyMult", 2)
+    };
+  }
+
+  /* ---------- risk score (0–100) ----------
+     Weights are easy to tune here. Low < 20, Medium 20–59, High 60+. */
+  function computeRisk(d){
+    var factors = [], score = 0;
+    if (d.dbChange){
+      score += 30; factors.push("Database schema change");
+      if (d.dbOperation === "drop"){ score += 10; factors.push("Destructive operation: dropping a column"); }
+    }
+    if (d.asyncChange){ score += 20; factors.push("Background worker / queue payload change"); }
+    if (d.cacheChange){ score += 20; factors.push("Cached or session object shape change"); }
+    if (d.coldStart){ score += 20; factors.push("Cold-start capacity risk"); }
+    var appFactors = factors.length;
+    if (d.rolloutStrategy === "all"){
+      score += appFactors > 0 ? 20 : 5;
+      factors.push("Rolling out to all users at once");
+    }
+    if (d.rolloutStrategy === "dark") score = Math.max(0, score - 5);
+    var missing = [];
+    if (!d.hasOwner) missing.push("team owner");
+    if (!d.hasWatcher) missing.push("watcher");
+    if (!d.hasEscalation) missing.push("escalation path");
+    if (missing.length){ score += 10; factors.push("Accountability gap: no " + missing.join(", ")); }
+    score = Math.min(100, Math.max(0, Math.round(score)));
+    var level = "Low", cls = "risk-low";
+    if (score >= 60){ level = "High"; cls = "risk-high"; }
+    else if (score >= 20){ level = "Medium"; cls = "risk-medium"; }
+    return { factors: factors, appFactors: appFactors, score: score, level: level, cls: cls };
+  }
+
+  /* ---------- rollout description (used by summary, checklist, exports) ---------- */
+  function rolloutDescription(d){
+    switch(d.rolloutStrategy){
+      case "flag":
+        return "Behind flag `" + d.flagName + "`, staged 0% → internal → 1% → 100%, removed by " + d.cleanupDate + ".";
+      case "canary":
+        return "Canary deployment through stages " + d.canaryStages.join("% → ") + "%, soaking " + d.canarySoak + " min at each stage.";
+      case "bluegreen":
+        return "Blue-green deployment: full switch via " + SWITCH_LABELS[d.blueGreenSwitch] + " once green is healthy, blue kept warm for rollback.";
+      case "rolling":
+        return "Rolling deployment: " + plural(d.rollingBatch, "instance") + " per batch, " + d.rollingInterval + "s between batches.";
+      case "dark":
+        return "Dark launch: " + d.darkTraffic + "% shadow traffic, nothing served to real users until results are compared.";
+      default:
+        return "All users, single deploy — confirm this is deliberate for the risk level above.";
+    }
+  }
+
+  /* ---------- checklist items ---------- */
+  function buildChecklistItems(d){
+    var items = [];
+    items.push({ id:"compat", text:"Confirm the change is backwards compatible with the running version, including job payloads and cached data.", critical: d.asyncChange || d.cacheChange });
+
+    if (d.dbChange){
+      items.push({ id:"dborder", text:"Confirm the schema change (" + d.dbOperation + " on `" + d.dbTable + "." + (d.dbOperation === "add" ? d.dbColumnNew : d.dbColumnOld) + "`) ships in an earlier deploy than the code that depends on it.", critical:true });
+    }
+
+    items.push({ id:"config", text:"Confirm any new config this deploy needs already exists in the " + ENV_LABELS[d.releaseEnv].toLowerCase() + " environment.", critical:false });
+
+    if (d.coldStart){
+      items.push({ id:"probe", text:"Confirm the startup probe window (~" + Math.ceil(d.warmUpSeconds / d.probePeriod) + " checks at " + d.probePeriod + "s) covers the real warm-up time (" + d.warmUpSeconds + "s).", critical:true });
+    }
+
+    items.push({ id:"rollback", text:"Name the rollback trigger: error rate above " + d.errorRate + "% for " + plural(d.watchWindow, "minute") + ", or p95 latency above " + d.latencyMult + "x normal.", critical:true });
+    items.push({ id:"rollout", text:"Say how the change reaches users: " + rolloutDescription(d), critical: d.rolloutStrategy === "all" });
+
+    if (d.rolloutStrategy === "flag")
+      items.push({ id:"killswitch", text:"Test the kill switch: turning `" + d.flagName + "` off must restore the old behaviour without a redeploy.", critical:false });
+    if (d.rolloutStrategy === "canary")
+      items.push({ id:"canarygate", text:"Agree the promotion gate for each canary stage (" + d.canaryStages.join("%, ") + "%) before starting — who approves each step.", critical:false });
+    if (d.rolloutStrategy === "bluegreen")
+      items.push({ id:"bgkeep", text:"Keep the blue environment warm and untouched until green has passed the full watch window.", critical:false });
+    if (d.rolloutStrategy === "rolling")
+      items.push({ id:"rollcap", text:"Confirm the remaining instances can carry normal load while a batch of " + plural(d.rollingBatch, "instance") + " is out of rotation.", critical:false });
+    if (d.rolloutStrategy === "dark")
+      items.push({ id:"darkside", text:"Confirm shadow traffic has no side effects: no duplicate writes, emails, charges, or third-party calls.", critical:true });
+
+    items.push({ id:"owner", text:"Name the accountable team owner: " + d.teamOwner + ".", critical:false });
+    items.push({ id:"watcher", text:"Name who watches for the first fifteen minutes: " + d.watcherName + ".", critical:false });
+    items.push({ id:"escalation", text:"Agree the escalation path if the trigger fires: " + d.escalationPath + ".", critical:false });
+
+    if (d.cacheChange){
+      items.push({ id:"cachever", text:"Bump the cache key version (`" + d.cachePrefix + ":v2:*`) so old readers never see the new shape.", critical:true });
+    }
+    if (d.asyncChange){
+      items.push({ id:"dualwrite", text:"Dual-write the payload (`" + d.payloadOldField + "` + `" + d.payloadNewField + "`), and only drop the old field after the queue drains.", critical:true });
+    }
+
+    items.push({ id:"verify", text:"Run a post-deploy smoke test on the critical user path within 15 minutes and post the result in the release thread.", critical:false });
+    return items;
+  }
+
+  /* ---------- gate: blocked / conditional / ready ---------- */
+  function computeGate(items){
+    var critical = items.filter(function(i){ return i.critical; });
+    var doneCritical = critical.filter(function(i){ return checkedItems[i.id]; }).length;
+    var total = items.length;
+    var done = items.filter(function(i){ return checkedItems[i.id]; }).length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    var st = "ready";
+    if (critical.length > 0 && doneCritical < critical.length) st = "blocked";
+    else if (done < total) st = "conditional";
+    var tier = "None";
+    if (st !== "blocked") tier = pct === 100 ? "Gold" : (pct >= 75 ? "Silver" : "Bronze");
+    return { critical:critical.length, doneCritical:doneCritical, total:total, done:done, pct:pct, state:st, tier:tier };
+  }
+  function gateLabel(g){
+    if (g.state === "blocked") return "BLOCKED (No-Go) — " + (g.critical - g.doneCritical) + " critical item(s) open";
+    if (g.state === "conditional") return "CONDITIONAL GO — critical items done, " + (g.total - g.done) + " other item(s) open";
+    return "GO — all items complete";
+  }
+
+  /* ---------- generators ---------- */
+  function envLine(d){
+    var s = ENV_LABELS[d.releaseEnv];
+    if (d.releaseDate) s += " · " + d.releaseDate;
+    if (d.releaseWindow) s += " · " + d.releaseWindow;
+    return s;
+  }
+
+  function genSummary(d, risk, gate){
+    var L = [];
+    L.push("Change: " + d.changeName);
+    L.push("Target: " + envLine(d));
+    L.push("Team owner: " + d.teamOwner);
+    L.push("Watcher for first 15 minutes: " + d.watcherName);
+    L.push("Escalation path: " + d.escalationPath);
+    L.push("Risk level: " + risk.level + " (score " + risk.score + "/100, " + plural(risk.appFactors, "application-risk factor") + ")");
+    L.push("Rollout: " + rolloutDescription(d));
+    L.push("Gate status: " + gateLabel(gate) + (gate.tier !== "None" ? " · readiness tier " + gate.tier : ""));
+    L.push("");
+    if (risk.factors.length){
+      L.push("Active risk factors:");
+      risk.factors.forEach(function(f){ L.push("  - " + f); });
+    } else {
+      L.push("No risk factors were flagged. This looks close to a routine, low-risk deploy —");
+      L.push("keep the checklist short and let review + tests do the rest of the work.");
+    }
+    L.push("");
+    L.push("Reminder: infrastructure items (certs, image provenance, autoscaling, log shipping, connection");
+    L.push("draining) should be enforced by your pipeline, not re-checked by a person on every deploy.");
+    return L.join("\n");
+  }
+
+  function genChecklist(d, risk, items){
+    var g = computeGate(items);
+    var L = [];
+    L.push("## Deployment checklist — " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("");
+    items.forEach(function(it){
+      L.push("- [" + (checkedItems[it.id] ? "x" : " ") + "] " + it.text + (it.critical ? "  **[CRITICAL]**" : ""));
+    });
+    L.push("");
+    L.push("_Risk level: " + risk.level + " (" + risk.score + "/100). Gate: " + gateLabel(g) + "._");
+    return L.join("\n");
+  }
+
+  function genDbMigration(d){
+    var L = [];
+    var op = d.dbOperation, table = d.dbTable, oldC = d.dbColumnOld, newC = d.dbColumnNew;
+    L.push("-- Expand / contract migration for " + table + "." + (op === "add" ? newC : oldC));
+    L.push("-- Never ship a schema change and the code that depends on it in the same deploy.");
+    L.push("");
+    if (op === "add" || op === "rename"){
+      L.push("-- Deploy 1: add the column. Nullable, no default, so there is no table rewrite or long lock.");
+      L.push("ALTER TABLE " + table + " ADD COLUMN " + newC + " varchar(255);");
+      L.push("");
+      L.push("-- Deploy 2: write both, still read the old one.");
+      L.push("def save_" + table.replace(/s$/, "") + "(record, value):");
+      L.push("    record." + oldC + " = value        # still the source of truth");
+      L.push("    record." + newC + " = value        # new column starts filling");
+      L.push("");
+      L.push("-- Backfill rows that existed before deploy 2, in batches so no lock is held long.");
+      L.push("UPDATE " + table + " SET " + newC + " = " + oldC);
+      L.push("WHERE " + newC + " IS NULL");
+      L.push("LIMIT 5000;");
+      L.push("");
+      L.push("-- Deploy 3: read the new column, with a fallback so rolling back to deploy 2 is safe.");
+      L.push("display_value = record." + newC + " or record." + oldC);
+      L.push("");
+      L.push("-- Deploy 4 (contract): weeks later, once nothing references the old column.");
+      L.push("ALTER TABLE " + table + " DROP COLUMN " + oldC + ";");
+    } else {
+      L.push("-- Dropping a column safely means the contract step of a migration already underway.");
+      L.push("-- Confirm every deploy of every service has stopped reading `" + oldC + "` before this ships:");
+      L.push("ALTER TABLE " + table + " DROP COLUMN " + oldC + ";");
+      L.push("");
+      L.push("-- If nothing has stopped reading it yet, this is not a drop — it's an outage.");
+    }
+    L.push("");
+    L.push("-- One rule regardless of direction: never run a long migration inside the deploy itself.");
+    return L.join("\n");
+  }
+
+  function genAsyncPayload(d){
+    var L = [];
+    L.push("# Producer and consumer for `" + d.queueName + "` may not deploy at the same moment.");
+    L.push("# For one release, send a shape both the old and new consumer can read.");
+    L.push("");
+    L.push("enqueue(\"" + d.queueName + "\", {");
+    L.push("    \"" + d.payloadOldField + "\": value,                 # old consumers read this");
+    L.push("    \"" + d.payloadNewField + "\": {\"id\": value, ...},   # new consumers read this");
+    L.push("})");
+    L.push("");
+    L.push("def " + d.queueName + "(payload):");
+    L.push("    key = payload.get(\"" + d.payloadOldField + "\") or payload[\"" + d.payloadNewField + "\"][\"id\"]");
+    L.push("");
+    L.push("# Then: deploy the new consumer, let the queue drain, and drop `" + d.payloadOldField + "`");
+    L.push("# from the producer in a later release. Same rule as a database column:");
+    L.push("# add, migrate, remove — never all at once.");
+    return L.join("\n");
+  }
+
+  function genCacheVersioning(d){
+    var L = [];
+    L.push("# Changing the shape of a cached object breaks old readers even though no database was touched.");
+    L.push("");
+    L.push("CACHE_VERSION = \"v2\"   # bump this whenever the stored shape changes");
+    L.push("");
+    L.push("def cache_key(" + d.cachePrefix + "_id):");
+    L.push("    return f\"" + d.cachePrefix + ":{CACHE_VERSION}:{" + d.cachePrefix + "_id}\"");
+    L.push("");
+    L.push("cache.set(cache_key(" + d.cachePrefix + ".id), new_shape, ex=86400)");
+    L.push("");
+    L.push("# New code misses on the new key, rebuilds from the source of truth.");
+    L.push("# Old `" + d.cachePrefix + ":*` entries expire on their own.");
+    return L.join("\n");
+  }
+
+  function genFlagYaml(d){
+    var L = [];
+    L.push("# flags.yml — stage 1: code is live, behaviour is not");
+    L.push(d.flagName + ":");
+    L.push("  enabled: false");
+    L.push("");
+    L.push("# Stage 2: internal only");
+    L.push(d.flagName + ":");
+    L.push("  enabled: true");
+    L.push("  audience: internal");
+    L.push("");
+    L.push("# Stage 3: 1% of real users — watch error rate and latency at this slice");
+    L.push(d.flagName + ":");
+    L.push("  enabled: true");
+    L.push("  audience: percentage");
+    L.push("  percentage: 1");
+    L.push("");
+    L.push("# Stage 4: everyone, with the cleanup date written down at the same time");
+    L.push(d.flagName + ":");
+    L.push("  enabled: true");
+    L.push("  audience: percentage");
+    L.push("  percentage: 100");
+    L.push("  remove_by: " + d.cleanupDate);
+    L.push("");
+    L.push("# KILL SWITCH — if anything looks wrong at any stage, flip this instead of redeploying:");
+    L.push(d.flagName + ":");
+    L.push("  enabled: false");
+    L.push("");
+    L.push("# Rollback triggers that should flip the kill switch:");
+    L.push("#   error rate > " + d.errorRate + "% for " + plural(d.watchWindow, "minute") + ", or p95 latency > " + d.latencyMult + "x normal.");
+    return L.join("\n");
+  }
+
+  function genCanaryPlan(d){
+    var L = [];
+    L.push("# Canary rollout plan for " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("# Hold each stage for " + d.canarySoak + " minute(s) and only advance if the stage stays clean.");
+    L.push("");
+    d.canaryStages.forEach(function(p, i){
+      L.push("Stage " + (i + 1) + ": " + p + "% of traffic" + (p === 100 ? "  (full rollout)" : ""));
+      L.push("  - Watch error rate (< " + d.errorRate + "%) and p95 latency (< " + d.latencyMult + "x normal) for " + d.canarySoak + " min.");
+      L.push("  - If either threshold is crossed: send traffic back to 0% immediately. Do not advance.");
+      L.push("");
+    });
+    L.push("# Total minimum soak time: " + (d.canaryStages.length * d.canarySoak) + " minutes across " + plural(d.canaryStages.length, "stage") + ".");
+    return L.join("\n");
+  }
+
+  function genBlueGreenPlan(d){
+    var L = [];
+    L.push("# Blue-green deployment plan for " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("");
+    L.push("1. Deploy the new version to the GREEN environment — it takes zero live traffic yet.");
+    L.push("2. Run smoke tests and health checks directly against GREEN.");
+    L.push("3. Switch traffic from BLUE to GREEN using: " + SWITCH_LABELS[d.blueGreenSwitch] + ".");
+    L.push("4. Watch error rate (< " + d.errorRate + "%) and p95 latency (< " + d.latencyMult + "x normal) for " + plural(d.watchWindow, "minute") + ".");
+    L.push("5. Keep BLUE warm and untouched — rollback means switching traffic back, not redeploying.");
+    L.push("6. Once GREEN is confirmed stable, BLUE becomes the target for the next release.");
+    L.push("");
+    L.push("# Database changes must be backward compatible: BLUE and GREEN share one database during the switch.");
+    return L.join("\n");
+  }
+
+  function genRollingPlan(d){
+    var L = [];
+    L.push("# Rolling deployment plan for " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("");
+    L.push("- Batch size: " + plural(d.rollingBatch, "instance") + " at a time.");
+    L.push("- Wait " + d.rollingInterval + "s between batches, with a health check before continuing.");
+    L.push("- Stop the rollout and roll that batch back if it fails its health checks.");
+    L.push("");
+    L.push("# Kubernetes equivalent:");
+    L.push("strategy:");
+    L.push("  type: RollingUpdate");
+    L.push("  rollingUpdate:");
+    L.push("    maxUnavailable: 0");
+    L.push("    maxSurge: " + d.rollingBatch);
+    L.push("minReadySeconds: " + d.rollingInterval);
+    L.push("");
+    L.push("# Generic loop:");
+    L.push("for batch in split_into_batches(instances, size=" + d.rollingBatch + "):");
+    L.push("    drain(batch)");
+    L.push("    deploy(batch, new_version)");
+    L.push("    wait_until_healthy(batch)");
+    L.push("    rejoin(batch)");
+    L.push("    sleep(" + d.rollingInterval + ")");
+    return L.join("\n");
+  }
+
+  function genDarkLaunchPlan(d){
+    var L = [];
+    L.push("# Dark launch plan for " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("# Real users only ever see the old path. The new path runs in the shadows and is compared, not served.");
+    L.push("");
+    L.push("def handle_request(req):");
+    L.push("    real_response = old_path(req)");
+    L.push("    if sample(" + d.darkTraffic + "):  # " + d.darkTraffic + "% shadow traffic");
+    L.push("        try:");
+    L.push("            shadow_response = new_path(req)  # never returned to the user");
+    L.push("            record_comparison(req, real_response, shadow_response)");
+    L.push("        except Exception:");
+    L.push("            pass  # shadow failures must never affect the real response");
+    L.push("    return real_response");
+    L.push("");
+    L.push("# Shadow code must be side-effect free: no writes, emails, charges or third-party calls.");
+    L.push("# Promote the new path only once comparisons show no meaningful difference across a representative sample.");
+    return L.join("\n");
+  }
+
+  function genProbes(d){
+    var period = d.probePeriod;
+    var startupThreshold = Math.ceil(d.warmUpSeconds / period) + 2;
+    var startupWindow = startupThreshold * period;
+    var L = [];
+    L.push("# Generous window for the first boot only.");
+    L.push("startupProbe:");
+    L.push("  httpGet: { path: /ready, port: 8080 }");
+    L.push("  periodSeconds: " + period);
+    L.push("  failureThreshold: " + startupThreshold + "     # allows ~" + startupWindow + "s to warm up (needs " + d.warmUpSeconds + "s)");
+    L.push("");
+    L.push("# Tight window once the app is actually up.");
+    L.push("readinessProbe:");
+    L.push("  httpGet: { path: /ready, port: 8080 }");
+    L.push("  periodSeconds: " + period);
+    L.push("  failureThreshold: 3");
+    L.push("");
+    L.push("# If failureThreshold * periodSeconds on the OLD single readiness probe was less than " + d.warmUpSeconds + "s,");
+    L.push("# instances were being killed right as they were about to be ready.");
+    return L.join("\n");
+  }
+
+  function rollbackList(d){
+    var out = [
+      "Error rate above " + d.errorRate + "% sustained for " + plural(d.watchWindow, "minute") + ".",
+      "p95 latency above " + d.latencyMult + "x its normal value."
+    ];
+    if (d.asyncChange) out.push("Queue depth on `" + d.queueName + "` climbing without recovery.");
+    return out;
+  }
+
+  function genRollback(d){
+    var L = [];
+    L.push("Rollback trigger for " + d.changeName + " — decided before shipping:");
+    L.push("");
+    rollbackList(d).forEach(function(t, i){ L.push("  " + (i + 1) + ". " + t); });
+    L.push("");
+    L.push("Roll back the moment any one is crossed — no discussion at the time it happens.");
+    L.push("Watch percentiles, not averages.");
+    L.push("");
+    L.push("Who acts: " + d.watcherName + ".  Team owner: " + d.teamOwner + ".");
+    L.push("Escalation path: " + d.escalationPath + ".");
+    L.push("");
+    L.push("Honesty check: how long would it actually take " + d.watcherName + " to notice each signal today?");
+    L.push("If that's longer than the " + d.watchWindow + "-minute window above, the gap isn't the checklist —");
+    L.push("it's the monitoring.");
+    return L.join("\n");
+  }
+
+  /* Slack / Teams announcement */
+  function genComms(d, risk, gate){
+    var L = [];
+    L.push(":rocket: Release starting — " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    if (d.releaseDate || d.releaseWindow) L.push("When: " + [d.releaseDate, d.releaseWindow].filter(Boolean).join(" · "));
+    L.push("Owner: " + d.teamOwner);
+    L.push("Watching: " + d.watcherName + " (first 15 minutes)");
+    L.push("Escalation: " + d.escalationPath);
+    L.push("Risk: " + risk.level + " (" + risk.score + "/100)");
+    L.push("Rollout: " + rolloutDescription(d).replace(/`/g, ""));
+    L.push("Rollback if: " + rollbackList(d).map(function(t){ return t.replace(/`/g, "").replace(/\.$/, ""); }).join("; ") + ".");
+    L.push("Gate: " + gateLabel(gate));
+    L.push("");
+    L.push("Updates will follow in this thread. Please hold unrelated deploys until we confirm all-clear.");
+    return L.join("\n");
+  }
+
+  /* GitHub-flavoured Markdown issue */
+  function genGithubIssue(d, risk, items){
+    var g = computeGate(items);
+    var L = [];
+    L.push("# Release: " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("");
+    L.push("| Field | Value |");
+    L.push("| --- | --- |");
+    L.push("| Risk | **" + risk.level + "** (" + risk.score + "/100) |");
+    L.push("| Gate | " + gateLabel(g) + " |");
+    L.push("| Target | " + envLine(d) + " |");
+    L.push("| Team owner | " + d.teamOwner + " |");
+    L.push("| Watcher (first 15 min) | " + d.watcherName + " |");
+    L.push("| Escalation path | " + d.escalationPath + " |");
+    L.push("| Rollout | " + rolloutDescription(d) + " |");
+    L.push("");
+    L.push("## Checklist");
+    items.forEach(function(it){
+      L.push("- [" + (checkedItems[it.id] ? "x" : " ") + "] " + it.text + (it.critical ? " **[CRITICAL]**" : ""));
+    });
+    L.push("");
+    L.push("## Rollback trigger");
+    rollbackList(d).forEach(function(t){ L.push("- " + t); });
+    L.push("");
+    L.push("**Suggested labels:** `release`, `risk-" + risk.level.toLowerCase() + "`" + (d.dbChange ? ", `db-migration`" : ""));
+    return L.join("\n");
+  }
+
+  /* Jira wiki markup issue */
+  function genJiraIssue(d, risk, items){
+    var g = computeGate(items);
+    function jira(s){ return s.replace(/`([^`]+)`/g, "{{$1}}"); }
+    var L = [];
+    L.push("h2. Release: " + d.changeName + " (" + ENV_LABELS[d.releaseEnv] + ")");
+    L.push("*Risk:* " + risk.level + " (" + risk.score + "/100)");
+    L.push("*Gate:* " + gateLabel(g));
+    L.push("*Target:* " + envLine(d));
+    L.push("*Team owner:* " + d.teamOwner);
+    L.push("*Watcher (first 15 min):* " + d.watcherName);
+    L.push("*Escalation path:* " + d.escalationPath);
+    L.push("*Rollout:* " + jira(rolloutDescription(d)));
+    L.push("");
+    L.push("h3. Checklist");
+    items.forEach(function(it){
+      var mark = checkedItems[it.id] ? "(/)" : (it.critical ? "(!)" : "(?)");
+      L.push("* " + mark + " " + jira(it.text) + (it.critical ? " *[CRITICAL]*" : ""));
+    });
+    L.push("");
+    L.push("h3. Rollback trigger");
+    rollbackList(d).forEach(function(t){ L.push("* " + jira(t)); });
+    L.push("");
+    L.push("_Legend: (/) done, (!) critical and open, (?) open_");
+    return L.join("\n");
+  }
+
+  /* ---------- tabs ---------- */
+  function buildTabs(d, risk, items){
+    var tabs = [];
+    function md(id, label, fn, opts){ tabs.push({ id:id, label:label, skipInPackage: opts && opts.skip, render:function(){ return { type:"md", text: fn() }; } }); }
+    function code(id, label, fn){ tabs.push({ id:id, label:label, render:function(){ return { type:"code", text: fn() }; } }); }
+
+    md("summary", "Risk Summary", function(){ return genSummary(d, risk, computeGate(items)); });
+    md("checklist", "PR Checklist", function(){ return genChecklist(d, risk, items); });
+    if (d.dbChange) code("dbmig", "DB Migration", function(){ return genDbMigration(d); });
+    if (d.asyncChange) code("asyncpay", "Async Payload", function(){ return genAsyncPayload(d); });
+    if (d.cacheChange) code("cachever", "Cache Versioning", function(){ return genCacheVersioning(d); });
+    if (d.rolloutStrategy === "flag") code("flagyaml", "Feature Flag", function(){ return genFlagYaml(d); });
+    if (d.rolloutStrategy === "canary") code("canaryplan", "Canary Plan", function(){ return genCanaryPlan(d); });
+    if (d.rolloutStrategy === "bluegreen") code("bgplan", "Blue-Green Plan", function(){ return genBlueGreenPlan(d); });
+    if (d.rolloutStrategy === "rolling") code("rollingplan", "Rolling Plan", function(){ return genRollingPlan(d); });
+    if (d.rolloutStrategy === "dark") code("darkplan", "Dark Launch Plan", function(){ return genDarkLaunchPlan(d); });
+    if (d.coldStart) code("probes", "K8s Probes", function(){ return genProbes(d); });
+    md("rollback", "Rollback Trigger", function(){ return genRollback(d); });
+    md("comms", "Slack Announcement", function(){ return genComms(d, risk, computeGate(items)); });
+    tabs.push({ id:"issues", label:"Jira / GitHub", skipInPackage:true, render:function(){
+      return { type:"multi", blocks:[
+        { label:"GitHub Issue (Markdown)", text: genGithubIssue(d, risk, items), css:"md-block" },
+        { label:"Jira Issue (wiki markup)", text: genJiraIssue(d, risk, items), css:"md-block" }
+      ]};
+    }});
+    return tabs;
+  }
+
+  function fullPackage(d, risk, items, tabs){
+    var P = [];
+    P.push("### Risk Summary\n");
+    P.push(genSummary(d, risk, computeGate(items)));
+    P.push("");
+    P.push("### PR Checklist\n");
+    P.push(genChecklist(d, risk, items));
+    P.push("");
+    tabs.forEach(function(t){
+      if (t.id === "summary" || t.id === "checklist" || t.skipInPackage) return;
+      var out = t.render();
+      P.push("### " + t.label + "\n");
+      P.push(out.type === "code" ? "```\n" + out.text + "\n```" : out.text);
+      P.push("");
+    });
+    return P.join("\n");
+  }
+
+  /* ---------- clipboard + download ---------- */
+  function copyText(text, btn){
+    function done(ok){
+      if (btn){
+        var original = btn.getAttribute("data-label") || btn.textContent;
+        btn.setAttribute("data-label", original);
+        btn.textContent = ok ? "Copied" : "Copy failed";
+        btn.classList.toggle("copied", ok);
+        setTimeout(function(){ btn.textContent = original; btn.classList.remove("copied"); }, 1400);
+      } else {
+        showToast(ok ? "Copied to clipboard" : "Copy failed");
+      }
+    }
+    function fallback(){
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        var ok = document.execCommand("copy");
+        document.body.removeChild(ta); done(!!ok);
+      } catch(e){ done(false); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }).catch(fallback);
+    } else { fallback(); }
+  }
+
+  function downloadText(filename, text){
+    try{
+      var blob = new Blob([text], { type:"text/markdown;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+      showToast("Downloaded " + filename);
+    } catch(e){ showToast("Download failed"); }
+  }
+
+  /* ---------- share link / autosave (same field list) ---------- */
+  function collectFields(){
+    var f = {};
+    FIELD_IDS.forEach(function(id){ var el = $(id); if (el) f[id] = el.value; });
+    return f;
+  }
+
+  function buildShareURL(){
+    var payload = { f: collectFields(), t: { dbChange:state.dbChange, asyncChange:state.asyncChange, cacheChange:state.cacheChange, coldStart:state.coldStart } };
+    try {
+      var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      return location.origin + location.pathname + "?s=" + encoded;
+    } catch(e){ return location.href; }
+  }
+
+  /* Old (v1) share links used short keys — map them so previously shared links keep working. */
+  var LEGACY_FIELDS = { n:"changeName", w:"watcherName", dbo:"dbOperation", dbt:"dbTable", dbc:"dbColumnOld", dbn:"dbColumnNew",
+    q:"queueName", po:"payloadOldField", pn:"payloadNewField", cp:"cachePrefix", ws:"warmUpSeconds", pp:"probePeriod",
+    rs:"rolloutStrategy", fn:"flagName", cd:"cleanupDate", er:"errorRate", ww:"watchWindow", lm:"latencyMult" };
+  var LEGACY_TOGGLES = { db:"dbChange", a:"asyncChange", c:"cacheChange", cs:"coldStart" };
+
+  function loadFromURL(){
+    var s = new URLSearchParams(location.search).get("s");
+    if (!s) return false;
+    try {
+      var payload = JSON.parse(decodeURIComponent(escape(atob(s))));
+      var fields = payload.f, toggles = payload.t;
+      if (!fields){
+        fields = {}; toggles = {};
+        Object.keys(LEGACY_FIELDS).forEach(function(k){ if (payload[k] !== undefined) fields[LEGACY_FIELDS[k]] = payload[k]; });
+        Object.keys(LEGACY_TOGGLES).forEach(function(k){ toggles[LEGACY_TOGGLES[k]] = !!payload[k]; });
+      }
+      applyState(fields, toggles);
+      showToast("Loaded shared checklist");
+      return true;
+    } catch(e){ return false; }
+  }
+
+  function saveDraft(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ fields: collectFields(), toggles: state, checked: checkedItems })); }
+    catch(e){ /* storage blocked or full — autosave silently skipped */ }
+  }
+  function restoreDraft(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      var data = JSON.parse(raw);
+      applyState(data.fields, data.toggles);
+      if (data.checked && typeof data.checked === "object") checkedItems = data.checked;
+      return true;
+    } catch(e){ return false; }
+  }
+  function clearDraft(){
+    try{ localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    location.href = location.pathname;   // reload without ?s= so the reset really is a clean slate
+  }
+
+  /* ---------- presets ---------- */
+  var OFF = { dbChange:false, asyncChange:false, cacheChange:false, coldStart:false };
+  var PRESETS = {
+    hotfix:  { fields:{ rolloutStrategy:"rolling", errorRate:"1", watchWindow:"2" }, toggles: OFF },
+    schema:  { fields:{ rolloutStrategy:"canary", dbOperation:"add" }, toggles:{ dbChange:true, asyncChange:false, cacheChange:false, coldStart:false } },
+    queue:   { fields:{ rolloutStrategy:"rolling" }, toggles:{ dbChange:false, asyncChange:true, cacheChange:false, coldStart:false } },
+    bigbang: { fields:{ rolloutStrategy:"all" }, toggles:{ dbChange:true, asyncChange:true, cacheChange:true, coldStart:true } }
+  };
+  $("presetSelect").addEventListener("change", function(){
+    var p = PRESETS[this.value];
+    if (!p) return;
+    applyState(p.fields, p.toggles);
+    checkedItems = {};
+    this.value = "";
+    renderAll();
+    showToast("Preset loaded");
+  });
+
+  /* ---------- FAQ (also feeds the FAQPage structured data) ---------- */
+  var FAQ = [
+    { q:"Is this tool really free?", a:"Yes. It runs entirely in your browser. There is no signup, no login, and no server-side storage. Nothing you type is transmitted anywhere." },
+    { q:"Does it store my data?", a:"Only on your own device. Your inputs auto-save in your browser's local storage so a page refresh doesn't lose your work, and nothing is sent to a server. Use the Reset saved draft button to clear it. You can also generate a shareable link that encodes your inputs in the URL, but that link is only as private as the URL itself." },
+    { q:"What is a Go/No-Go gate?", a:"A gate that blocks the release until every critical checklist item is complete. Critical items are marked in red. Until all of them are ticked the gate shows BLOCKED (No-Go). Once they are done but other items remain it shows CONDITIONAL GO, and when everything is ticked it shows GO. You can still copy the output at any time." },
+    { q:"What makes a task critical?", a:"Anything that, if missed, can cause a production incident: schema changes shipped in the wrong order, backward-incompatible payloads, cache shape changes without a version bump, probe windows shorter than the real warm-up, dark-launch side effects, and undefined rollback triggers." },
+    { q:"How is this different from a generic to-do list?", a:"A to-do list records intent. This tool derives a risk score from the toggles you set and produces content that is specific to the change — migration steps for your table, dual-write code for your queue, probe numbers for your warm-up, and a plan for your exact rollout strategy. It also enforces a gate." },
+    { q:"Can I share my checklist with my team?", a:"Yes. Use the 'Copy shareable link' button. It encodes your inputs into the URL. Anyone who opens the link sees the same checklist and the same gate state." },
+    { q:"Can I download the output?", a:"Yes. Use 'Copy full package' to copy everything as Markdown, 'Download .md' to save it as a file, or the per-tab copy buttons. You can also use your browser's print dialog (Ctrl/Cmd + P) to save the page as a PDF." },
+    { q:"Does it work on mobile?", a:"Yes. The layout collapses to a single column on small screens, and all inputs work with touch." },
+    { q:"Why is there no AI auto-generation?", a:"Because the value of this tool is in the specificity of its rules, not in free-form generation. Every output is deterministic and tied to a known pattern. That makes it reproducible and reviewable, which matters more than novelty on a release gate." },
+    { q:"What does this tool NOT do?", a:"It does not authenticate evidence, run your migration, execute a rollback, or replace a human decision. It derives a risk profile and produces a structured starting checklist. The final call to ship belongs to a named, accountable owner." },
+    { q:"Can I paste the checklist into Jira or GitHub?", a:"Yes. Open the Jira / GitHub tab, or use the 'Copy as GitHub Issue' and 'Copy as Jira' buttons. GitHub gets Markdown with task-list checkboxes; Jira gets wiki markup with status icons for critical and open items." },
+    { q:"Which rollout strategies are supported?", a:"Feature flag, canary, blue-green, rolling, dark launch, and all-users-at-once. Each strategy has its own fields and, apart from all-at-once, generates its own plan tab." }
+  ];
+
+  function renderFAQ(){
+    var c = $("faqContainer");
+    c.innerHTML = "";
+    FAQ.forEach(function(item){
+      var div = document.createElement("div");
+      div.className = "faq-item";
+      var q = document.createElement("div");
+      q.className = "faq-q";
+      q.setAttribute("role", "button"); q.setAttribute("tabindex", "0");
+      var qt = document.createElement("span"); qt.textContent = item.q;
+      var arrow = document.createElement("span"); arrow.className = "faq-arrow"; arrow.textContent = "›";
+      q.appendChild(qt); q.appendChild(arrow);
+      var a = document.createElement("div");
+      a.className = "faq-a";
+      a.textContent = item.a;
+      function toggle(){ div.classList.toggle("open"); }
+      q.addEventListener("click", toggle);
+      q.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); } });
+      div.appendChild(q); div.appendChild(a);
+      c.appendChild(div);
+    });
+  }
+  function injectFaqSchema(){
+    try{
+      var s = document.createElement("script");
+      s.type = "application/ld+json";
+      s.textContent = JSON.stringify({
+        "@context":"https://schema.org", "@type":"FAQPage",
+        "mainEntity": FAQ.map(function(f){ return { "@type":"Question", "name":f.q, "acceptedAnswer":{ "@type":"Answer", "text":f.a } }; })
+      });
+      document.head.appendChild(s);
+    } catch(e){}
+  }
+
+  /* ---------- risk gauge ---------- */
+  function riskColor(cls){
+    if (cls === "risk-high") return "var(--red)";
+    if (cls === "risk-medium") return "var(--gold)";
+    return "var(--green)";
+  }
+  function buildGauge(risk){
+    var wrap = document.createElement("div");
+    wrap.className = "gauge-row";
+    var g = document.createElement("div");
+    g.className = "gauge";
+    g.setAttribute("role", "img");
+    g.setAttribute("aria-label", "Risk score " + risk.score + " out of 100, " + risk.level);
+    g.style.background = "conic-gradient(" + riskColor(risk.cls) + " " + risk.score + "%, var(--track) 0)";
+    var inner = document.createElement("div");
+    inner.className = "g-inner";
+    inner.innerHTML = "<div class='g-num'>" + risk.score + "</div><div class='g-lbl'>" + esc(risk.level) + " risk / 100</div>";
+    g.appendChild(inner);
+    var legend = document.createElement("div");
+    legend.className = "gauge-legend";
+    legend.textContent = risk.factors.length
+      ? "Driven by: " + risk.factors.slice(0, 3).join("; ") + (risk.factors.length > 3 ? "; +" + (risk.factors.length - 3) + " more." : ".")
+      : "No risk factors are active — this reads as a routine, low-risk deploy.";
+    wrap.appendChild(g); wrap.appendChild(legend);
+    return wrap;
+  }
+
+  /* ---------- render ---------- */
+  function makeBtn(label, cls, onClick){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "copy-btn" + (cls ? " " + cls : ""); b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function renderAll(){
+    var d, risk, items, tabs, gate;
+    try {
+      d = gather();
+      risk = computeRisk(d);
+      items = buildChecklistItems(d);
+      tabs = buildTabs(d, risk, items);
+      gate = computeGate(items);
+    } catch(err){
+      $("contentBody").innerHTML = "<div class='not-applicable'>Something in the form couldn't be read. Adjust the fields and it will refresh automatically.</div>";
+      return;
+    }
+
+    saveDraft();
+    if (!tabs.some(function(t){ return t.id === activeTab; })) activeTab = "summary";
+
+    /* gate banner */
+    var gc = $("gateContainer");
+    gc.innerHTML = "";
+    var icons = { blocked:"⛔", conditional:"🟡", ready:"✅" };
+    var titles = { blocked:"Release blocked — No-Go", conditional:"Conditional Go", ready:"Go — ready to ship" };
+    var subs = {
+      blocked: (gate.critical - gate.doneCritical) + " of " + gate.critical + " critical item(s) still open — tick them in the PR Checklist tab.",
+      conditional: "All critical items are done. Finish the remaining " + (gate.total - gate.done) + " item(s) for a full Go.",
+      ready: "Every checklist item is complete."
+    };
+    var tierIcons = { Bronze:"🥉", Silver:"🥈", Gold:"🥇", None:"—" };
+    var banner = document.createElement("div");
+    banner.className = "gate-banner " + gate.state;
+    banner.innerHTML =
+      '<div class="g-left"><div class="g-icon">' + icons[gate.state] + '</div><div>' +
+        '<div class="g-title">' + titles[gate.state] + '</div>' +
+        '<div class="g-sub">' + subs[gate.state] + '</div></div></div>' +
+      '<div class="g-right">' + gate.done + " / " + gate.total + " items · " + gate.pct + '%' +
+        '<span class="tier">Readiness tier: ' + tierIcons[gate.tier] + (gate.tier === "None" ? "" : " " + gate.tier) + '</span></div>';
+    gc.appendChild(banner);
+
+    var prog = document.createElement("div");
+    prog.className = "progress-track";
+    var fill = document.createElement("div");
+    fill.className = "progress-fill";
+    fill.style.width = gate.pct + "%";
+    prog.appendChild(fill);
+    gc.appendChild(prog);
+
+    /* tabs */
+    var bar = $("tabBar");
+    bar.innerHTML = "";
+    tabs.forEach(function(t){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab-btn" + (t.id === activeTab ? " active" : "");
+      b.textContent = t.label;
+      b.addEventListener("click", function(){ activeTab = t.id; renderAll(); });
+      bar.appendChild(b);
+    });
+
+    /* content */
+    var body = $("contentBody");
+    body.innerHTML = "";
+
+    lastPackageText = fullPackage(d, risk, items, tabs);
+    var actions = document.createElement("div");
+    actions.className = "btn-row";
+    actions.appendChild(makeBtn("Copy full package", "primary", function(){ copyText(lastPackageText, this); }));
+    var ghBtn = makeBtn("Copy as GitHub Issue", "", function(){ copyText(genGithubIssue(d, risk, items), this); });
+    var jiraBtn = makeBtn("Copy as Jira", "", function(){ copyText(genJiraIssue(d, risk, items), this); });
+    var linkBtn = makeBtn("Copy shareable link", "", function(){ copyText(buildShareURL(), this); });
+    var dlBtn = makeBtn("Download .md", "", function(){ downloadText(slug(d.changeName) + "-release-checklist.md", lastPackageText); });
+    var pdfBtn = makeBtn("Save as PDF", "", function(){ window.print(); });
+    var resetBtn = makeBtn("Reset saved draft", "", function(){
+      if (window.confirm("Clear your locally saved draft and start fresh?")) clearDraft();
+    });
+    [ghBtn, jiraBtn, linkBtn, dlBtn, pdfBtn, resetBtn].forEach(function(b){ actions.appendChild(b); });
+    body.appendChild(actions);
+
+    if (activeTab === "summary"){
+      var stats = document.createElement("div");
+      stats.className = "stat-grid";
+      stats.innerHTML =
+        '<div class="stat"><div class="n">' + risk.score + '/100</div><div class="l">risk score</div></div>' +
+        '<div class="stat"><div class="n">' + items.length + '</div><div class="l">checklist items</div></div>' +
+        '<div class="stat"><div class="n">' + gate.critical + '</div><div class="l">critical items</div></div>' +
+        '<div class="stat"><div class="n">' + esc(ROLLOUT_LABELS[d.rolloutStrategy]) + '</div><div class="l">rollout mode</div></div>';
+      body.appendChild(stats);
+      body.appendChild(buildGauge(risk));
+
+      var badge = document.createElement("span");
+      badge.className = "risk-badge " + risk.cls;
+      badge.textContent = risk.level + " risk";
+      var ph = document.createElement("div");
+      ph.className = "panel-head";
+      var left = document.createElement("div");
+      left.innerHTML = '<h2>Risk Summary</h2><p class="sub">Computed from the toggles on the left</p>';
+      ph.appendChild(left); ph.appendChild(badge);
+      body.appendChild(ph);
+
+      var pre = document.createElement("pre");
+      pre.className = "md-block";
+      pre.textContent = genSummary(d, risk, gate);
+      body.appendChild(pre);
+      return;
+    }
+
+    if (activeTab === "checklist"){
+      var ph2 = document.createElement("div");
+      ph2.className = "panel-head";
+      ph2.innerHTML = '<div><h2>PR Checklist</h2><p class="sub">Tick items as you complete them. Critical items block the gate.</p></div>';
+      body.appendChild(ph2);
+
+      items.forEach(function(it){
+        var row = document.createElement("label");
+        row.className = "checklist-item" + (it.critical ? " critical" : "") + (checkedItems[it.id] ? " done" : "");
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!checkedItems[it.id];
+        cb.addEventListener("change", function(){ checkedItems[it.id] = cb.checked; renderAll(); });
+        var span = document.createElement("span");
+        span.className = "ci-label";
+        span.innerHTML = fmtInline(it.text) + (it.critical ? '<span class="critical-tag">Critical</span>' : "");
+        row.appendChild(cb); row.appendChild(span);
+        body.appendChild(row);
+      });
+
+      var cbtn = makeBtn("Copy checklist as Markdown", "", function(){ copyText(genChecklist(d, risk, items), this); });
+      cbtn.style.marginTop = "10px";
+      body.appendChild(cbtn);
+      return;
+    }
+
+    /* generic tabs (code / md / multi-block) */
+    var activeDef = tabs.filter(function(t){ return t.id === activeTab; })[0];
+    if (!activeDef) return;
+    var out = activeDef.render();
+
+    if (out.type === "multi"){
+      out.blocks.forEach(function(blk, i){
+        var h = document.createElement("div");
+        h.className = "panel-head" + (i ? " block-gap" : "");
+        var h3 = document.createElement("h3"); h3.textContent = blk.label;
+        h.appendChild(h3);
+        h.appendChild(makeBtn("Copy", "", function(){ copyText(blk.text, this); }));
+        body.appendChild(h);
+        var p = document.createElement("pre");
+        p.className = blk.css || "md-block";
+        p.textContent = blk.text;
+        body.appendChild(p);
+      });
+      return;
+    }
+
+    var ph3 = document.createElement("div");
+    ph3.className = "panel-head";
+    var title = document.createElement("h2"); title.textContent = activeDef.label;
+    ph3.appendChild(title);
+    ph3.appendChild(makeBtn("Copy", "", function(){ copyText(out.text, this); }));
+    body.appendChild(ph3);
+
+    var pre2 = document.createElement("pre");
+    pre2.className = out.type === "code" ? "code" : "md-block";
+    pre2.textContent = out.text;
+    body.appendChild(pre2);
+  }
+
+  /* ---------- keyboard shortcut: Ctrl/Cmd + Enter copies the full package ---------- */
+  document.addEventListener("keydown", function(e){
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      e.preventDefault();
+      if (lastPackageText) copyText(lastPackageText, null);
+    }
+  });
+
+  /* ---------- init ---------- */
+  try { $("updatedDate").textContent = new Date().toLocaleDateString(undefined, { year:"numeric", month:"long", day:"numeric" }); } catch(e){}
+  renderImages();
+  applyLinks();
+  renderFAQ();
+  injectFaqSchema();
+
+  var restored = restoreDraft();          // 1) saved draft
+  var fromLink = loadFromURL();           // 2) a shared link overrides the draft
+  if (!$("cleanupDate").value) $("cleanupDate").value = todayPlus(42);
+  syncRolloutPanels();
+  if (restored && !fromLink) showToast("Restored your last session");
+  renderAll();
+})();
+</script>
+</body>
+  </html>
